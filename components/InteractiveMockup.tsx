@@ -4,7 +4,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { 
   Bell, 
   Kanban, 
-  Activity, 
+  Pulse, 
   Users, 
   ChatCircle, 
   Plus, 
@@ -150,7 +150,7 @@ const InteractiveMockup = () => {
             <Kanban size={18} /> Board
           </button>
           <button className="w-full flex items-center gap-2 px-3 py-2 text-white/60 hover:bg-white/5 hover:text-white rounded-md text-sm font-medium transition-colors">
-            <Activity size={18} /> Activity
+            <Pulse size={18} /> Activity
           </button>
           <button className="w-full flex items-center gap-2 px-3 py-2 text-white/60 hover:bg-white/5 hover:text-white rounded-md text-sm font-medium transition-colors">
             <Users size={18} /> Members
