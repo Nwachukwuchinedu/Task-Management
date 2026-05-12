@@ -2,12 +2,15 @@ import mongoose, { Schema, Document, Model } from "mongoose";
 
 export interface ITask extends Document {
   title: string;
-  description: string;
-  status: "todo" | "in-progress" | "done";
+  description?: string;
+  column: mongoose.Types.ObjectId;
+  board: mongoose.Types.ObjectId;
+  position: number;
   priority: "low" | "medium" | "high";
   dueDate?: Date;
-  project: mongoose.Types.ObjectId;
   assignee?: mongoose.Types.ObjectId;
+  labels: string[];
+  createdBy: mongoose.Types.ObjectId;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -25,10 +28,20 @@ const TaskSchema = new Schema<ITask>(
       trim: true,
       maxlength: [2000, "Description cannot exceed 2000 characters"],
     },
-    status: {
-      type: String,
-      enum: ["todo", "in-progress", "done"],
-      default: "todo",
+    column: {
+      type: Schema.Types.ObjectId,
+      ref: "Column",
+      required: [true, "Column reference is required"],
+    },
+    board: {
+      type: Schema.Types.ObjectId,
+      ref: "Board",
+      required: [true, "Board reference is required"],
+    },
+    position: {
+      type: Number,
+      required: true,
+      default: 0,
     },
     priority: {
       type: String,
@@ -38,14 +51,19 @@ const TaskSchema = new Schema<ITask>(
     dueDate: {
       type: Date,
     },
-    project: {
-      type: Schema.Types.ObjectId,
-      ref: "Project",
-      required: [true, "Project reference is required"],
-    },
     assignee: {
       type: Schema.Types.ObjectId,
       ref: "User",
+    },
+    labels: [
+      {
+        type: String,
+      },
+    ],
+    createdBy: {
+      type: Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
     },
   },
   {
@@ -53,7 +71,8 @@ const TaskSchema = new Schema<ITask>(
   }
 );
 
-TaskSchema.index({ project: 1, status: 1 });
+TaskSchema.index({ column: 1, position: 1 });
+TaskSchema.index({ board: 1 });
 TaskSchema.index({ assignee: 1 });
 
 const Task: Model<ITask> =
