@@ -17,8 +17,8 @@ export interface IWorkspace {
   description?: string;
   icon: string;
   color: string;
-  owner: string;
-  members: string[];
+  owner: string | IUser;
+  members: (string | IUser)[];
   createdAt: string;
   updatedAt: string;
 }

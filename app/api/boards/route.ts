@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { connectDB } from "@/lib/db";
 import { Board, Column, Workspace } from "@/lib/models";
+import { Types } from "mongoose";
 
 export async function GET(request: NextRequest) {
   try {
@@ -18,7 +19,8 @@ export async function GET(request: NextRequest) {
 
     await connectDB();
 
-    const query: { workspace?: string } = {};
+    type BoardQuery = { workspace?: string | { $in: Types.ObjectId[] } };
+    const query: BoardQuery = {};
     if (workspaceId) {
       query.workspace = workspaceId;
     } else {
