@@ -34,7 +34,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const isBoardMember = board.members.some(
+    const members = board.members || [];
+    const isBoardMember = members.some(
       (m: { user: mongoose.Types.ObjectId }) => m.user.toString() === session.user.id
     );
 

@@ -74,7 +74,8 @@ export async function PUT(
       );
     }
 
-    const isBoardMember = board.members.some(
+    const members = board.members || [];
+    const isBoardMember = members.some(
       (m: { user: mongoose.Types.ObjectId }) => m.user.toString() === session.user.id
     );
 
@@ -133,7 +134,8 @@ export async function DELETE(
       );
     }
 
-    const isBoardMember = board.members.some(
+    const delMembers = board.members || [];
+    const isBoardMember = delMembers.some(
       (m: { user: mongoose.Types.ObjectId }) => m.user.toString() === session.user.id
     );
 

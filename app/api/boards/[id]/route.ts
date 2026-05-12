@@ -19,7 +19,9 @@ export async function GET(
     const { id } = await params;
     await connectDB();
 
-    const board = await Board.findById(id).populate("workspace", "name color icon owner members");
+    const board = await Board.findById(id)
+      .populate("workspace", "name color icon owner members")
+      .populate("members.user", "name email avatar");
 
     if (!board) {
       return NextResponse.json(

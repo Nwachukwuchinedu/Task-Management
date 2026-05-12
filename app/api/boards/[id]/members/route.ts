@@ -32,6 +32,7 @@ export async function GET(
 
     const workspace = await Workspace.findById(board.workspace);
 
+    const members = board.members || [];
     const isWorkspaceMember = workspace?.members.some(
       (m: mongoose.Types.ObjectId) => m.toString() === session.user.id
     );
@@ -94,7 +95,8 @@ export async function POST(
     }
 
     const isWorkspaceOwner = workspace.owner.toString() === session.user.id;
-    const isBoardAdmin = board.members.some(
+    const members = board.members || [];
+    const isBoardAdmin = members.some(
       (m: { user: mongoose.Types.ObjectId; role: string }) =>
         m.user.toString() === session.user.id && m.role === "admin"
     );
@@ -126,7 +128,7 @@ export async function POST(
       );
     }
 
-    const isAlreadyBoardMember = board.members.some(
+    const isAlreadyBoardMember = members.some(
       (m: { user: mongoose.Types.ObjectId }) => m.user.toString() === userToAdd._id.toString()
     );
 
@@ -199,7 +201,8 @@ export async function DELETE(
     }
 
     const isWorkspaceOwner = workspace.owner.toString() === session.user.id;
-    const isBoardAdmin = board.members.some(
+    const members = board.members || [];
+    const isBoardAdmin = members.some(
       (m: { user: mongoose.Types.ObjectId; role: string }) =>
         m.user.toString() === session.user.id && m.role === "admin"
     );
@@ -218,7 +221,7 @@ export async function DELETE(
       );
     }
 
-    board.members = board.members.filter(
+    board.members = members.filter(
       (m: { user: mongoose.Types.ObjectId }) => m.user.toString() !== userId
     );
     await board.save();
