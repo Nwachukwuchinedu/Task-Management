@@ -74,7 +74,7 @@ export async function POST(request: NextRequest) {
 
     const isMember =
       workspace.owner.toString() === session.user.id ||
-      workspace.members.includes(session.user.id as any);
+      workspace.members.some((m: unknown) => String(m) === session.user.id);
 
     if (!isMember) {
       return NextResponse.json(
@@ -85,26 +85,24 @@ export async function POST(request: NextRequest) {
 
     const defaultColumns = columns || ["Todo", "In Progress", "Done"];
 
-    const columnDocs = await Column.insertMany(
-      defaultColumns.map((col: string, index: number) => ({
-        name: col,
-        board: null,
-        position: index,
-      }))
-    );
-
     const board = await Board.create({
       name,
       description,
       color: color || "#3B82F6",
       workspace: workspaceId,
-      columns: columnDocs.map((c) => c._id),
+      columns: [],
     });
 
-    await Column.updateMany(
-      { _id: { $in: columnDocs.map((c) => c._id) } },
-      { board: board._id }
+    const columnDocs = await Column.insertMany(
+      defaultColumns.map((col: string, index: number) => ({
+        name: col,
+        board: board._id,
+        position: index,
+      }))
     );
+
+    board.columns = columnDocs.map((c) => c._id);
+    await board.save();
 
     const populatedBoard = await Board.findById(board._id)
       .populate({
