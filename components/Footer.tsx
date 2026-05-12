@@ -1,8 +1,9 @@
 "use client";
 
 import React from "react";
-import { ArrowRight, Check } from "@phosphor-icons/react";
+import { ArrowRight, CheckSquareOffset, TwitterLogo, GithubLogo, DiscordLogo, LinkedinLogo } from "@phosphor-icons/react";
 import MagneticButton from "./MagneticButton";
+import Link from "next/link";
 
 export const CTA = () => {
   return (
@@ -30,37 +31,64 @@ export const CTA = () => {
 };
 
 export const Footer = () => {
-  const tickerItems = [
-    "Sarah just created a task",
-    "Acme team shipped 12 tasks today",
-    "847 tasks completed in the last hour",
-    "Nexus team joined Nova",
+  const footerLinks = [
+    {
+      title: "Product",
+      links: ["Features", "Integrations", "Pricing", "Changelog", "Docs"],
+    },
+    {
+      title: "Resources",
+      links: ["Community", "Help Center", "Partners", "Blog", "Status"],
+    },
+    {
+      title: "Company",
+      links: ["About Us", "Careers", "Legal", "Privacy", "Contact"],
+    },
   ];
 
   return (
-    <footer className="border-t border-surface-border bg-surface pt-12 pb-8 overflow-hidden relative">
-      {/* Live Activity Ticker */}
-      <div className="w-full overflow-hidden relative mb-12 border-b border-surface-border pb-8 mask-image-linear">
-        <div className="flex animate-marquee w-max items-center">
-          <div className="flex space-x-12 pr-12 items-center">
-            {tickerItems.map((item, idx) => (
-              <div key={idx} className="text-sm font-medium text-text-muted flex items-center gap-2 font-sans tracking-wide">
-                <Check weight="bold" className="text-green-400" /> {item}
+    <footer className="border-t border-surface-border bg-surface pt-20 pb-12 overflow-hidden relative">
+      <div className="max-w-7xl mx-auto px-6 md:px-12 relative z-10">
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-12 md:gap-8 mb-16">
+          <div className="col-span-2">
+            <Link href="/" className="flex items-center gap-2 group mb-6 inline-flex">
+              <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-primary to-accent flex items-center justify-center shadow-[0_0_15px_rgba(59,130,246,0.3)]">
+                <CheckSquareOffset weight="fill" className="text-white text-xl" />
               </div>
-            ))}
+              <span className="font-logo text-2xl tracking-wide text-text-main">Taski</span>
+            </Link>
+            <p className="text-text-muted text-sm leading-relaxed max-w-sm mb-8">
+              The modern standard for visual task management. Built for fast-moving teams that want to ship faster without the chaos.
+            </p>
+            <div className="flex items-center gap-4 text-text-muted">
+              <a href="#" className="hover:text-text-main transition-colors"><TwitterLogo size={24} weight="fill" /></a>
+              <a href="#" className="hover:text-text-main transition-colors"><GithubLogo size={24} weight="fill" /></a>
+              <a href="#" className="hover:text-text-main transition-colors"><DiscordLogo size={24} weight="fill" /></a>
+              <a href="#" className="hover:text-text-main transition-colors"><LinkedinLogo size={24} weight="fill" /></a>
+            </div>
           </div>
-          <div className="flex space-x-12 pr-12 items-center">
-            {tickerItems.map((item, idx) => (
-              <div key={`copy-${idx}`} className="text-sm font-medium text-text-muted flex items-center gap-2 font-sans tracking-wide">
-                <Check weight="bold" className="text-green-400" /> {item}
-              </div>
-            ))}
+          
+          {footerLinks.map((column, idx) => (
+            <div key={idx} className="flex flex-col gap-4">
+              <h4 className="font-bold text-text-main mb-2">{column.title}</h4>
+              {column.links.map((link, i) => (
+                <Link key={i} href="#" className="text-text-muted text-sm hover:text-primary transition-colors w-fit">
+                  {link}
+                </Link>
+              ))}
+            </div>
+          ))}
+        </div>
+
+        <div className="pt-8 border-t border-surface-border flex flex-col md:flex-row items-center justify-between gap-4">
+          <div className="text-sm text-text-muted">
+            &copy; {new Date().getFullYear()} Taski Software Inc. All rights reserved.
+          </div>
+          <div className="flex items-center gap-2 text-sm text-text-muted">
+            <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
+            All systems operational
           </div>
         </div>
-      </div>
-
-      <div className="max-w-7xl mx-auto px-6 md:px-12 text-center text-xs text-text-muted font-sans">
-        <p>&copy; 2026 Nova Software Inc. All rights reserved.</p>
       </div>
     </footer>
   );

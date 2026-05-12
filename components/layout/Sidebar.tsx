@@ -4,7 +4,10 @@ import React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
-  House,
+  CheckSquareOffset,
+  SquaresFour,
+  CheckSquare,
+  Calendar,
   Gear,
   SignOut,
   Plus,
@@ -28,18 +31,18 @@ export default function Sidebar({ user, onSignOut }: SidebarProps) {
   const { workspaces, currentWorkspace } = useWorkspaceStore();
 
   const navItems = [
-    { href: "/dashboard", icon: House, label: "Dashboard" },
+    { href: "/dashboard", icon: SquaresFour, label: "Dashboard" },
     { href: "/settings", icon: Gear, label: "Settings" },
   ];
 
   return (
     <aside className="w-64 h-screen bg-surface border-r border-white/5 flex flex-col">
       <div className="p-4 border-b border-white/5">
-        <Link href="/dashboard" className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-accent flex items-center justify-center">
-            <span className="text-white font-bold text-xl">N</span>
+        <Link href="/dashboard" className="flex items-center gap-2 mb-8 px-4">
+          <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-primary to-accent flex items-center justify-center">
+            <CheckSquareOffset weight="fill" className="text-white text-xl" />
           </div>
-          <span className="text-xl font-heading font-bold text-white">Nova</span>
+          <span className="text-xl font-logo text-white">Taski</span>
         </Link>
       </div>
 

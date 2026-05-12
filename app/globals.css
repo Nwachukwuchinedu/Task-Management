@@ -1,8 +1,10 @@
+@import url('https://fonts.googleapis.com/css2?family=PT+Mono&family=Playfair+Display:ital,wght@0,400..900;1,400..900&display=swap');
 @import "tailwindcss";
 
 @theme {
   --font-sans: "DM Sans", ui-sans-serif, system-ui, sans-serif;
   --font-heading: "Bricolage Grotesque", ui-sans-serif, system-ui, sans-serif;
+  --font-logo: "Playfair Display", serif;
 
   /* Default (Light) Theme Colors */
   --color-background: #f5f4f0;

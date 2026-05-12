@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Envelope, Lock, Eye, EyeSlash, User, ArrowRight } from "@phosphor-icons/react";
+import { Envelope, Lock, Eye, EyeSlash, User, ArrowRight, CheckSquareOffset } from "@phosphor-icons/react";
 import { Button, Input } from "@/components/ui";
 import { useToast } from "@/components/ui/Toast";
 
@@ -75,11 +75,11 @@ export default function RegisterPage() {
 
       <div className="w-full max-w-md relative z-10">
         <div className="text-center mb-8">
-          <Link href="/" className="inline-flex items-center gap-2 mb-6">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-accent flex items-center justify-center">
-              <span className="text-white font-bold text-xl">N</span>
+          <Link href="/" className="flex items-center gap-2 group mb-12 w-fit mx-auto">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-primary to-accent flex items-center justify-center shadow-[0_0_15px_rgba(59,130,246,0.5)] group-hover:animate-glow-pulse transition-shadow duration-300">
+              <CheckSquareOffset weight="fill" className="text-white text-2xl" />
             </div>
-            <span className="text-2xl font-heading font-bold text-white">Nova</span>
+            <span className="text-2xl font-logo text-text-main">Taski</span>
           </Link>
           <h1 className="text-3xl font-heading font-bold text-white mb-2">Create account</h1>
           <p className="text-text-muted">Start organizing your team's work</p>

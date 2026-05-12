@@ -204,7 +204,7 @@ const Hero = () => {
             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
             <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
           </span>
-          Nova 2.0 is live
+          Taski 2.0 is live
         </div>
 
         {/* Wordmark Container */}

@@ -67,7 +67,8 @@ const Features = () => {
                 <GitBranch size={24} className="text-primary" />
               </div>
               <h4 className="text-2xl font-heading font-semibold text-text-main mb-3">Automated Workflows</h4>
-              <p className="text-text-muted text-sm leading-relaxed max-w-md">Connect your tools and let Nova handle the repetitive tasks. Our visual workflow builder maps exactly how your team operates.</p>
+              <h3 className="text-2xl font-bold font-heading text-text-main mb-4">Connect your tools and let Taski handle the rest.</h3>
+              <p className="text-text-muted text-sm leading-relaxed max-w-md">Connect your tools and let Taski handle the repetitive tasks. Our visual workflow builder maps exactly how your team operates.</p>
             </div>
             
             <div className="absolute right-[-10%] bottom-[-10%] w-[60%] h-[80%] pointer-events-none opacity-80 group-hover:opacity-100 transition-opacity duration-500">

@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { Kanban, List, X, Sun, Moon } from "@phosphor-icons/react";
+import { CheckSquareOffset, List, X, Sun, Moon } from "@phosphor-icons/react";
 import { useTheme } from "next-themes";
 import Link from "next/link";
 
@@ -40,9 +40,9 @@ const Navbar = () => {
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2 group">
           <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-primary to-accent flex items-center justify-center shadow-[0_0_15px_rgba(59,130,246,0.5)] group-hover:animate-glow-pulse transition-shadow duration-300">
-            <Kanban weight="bold" className="text-white text-xl" />
+            <CheckSquareOffset weight="fill" className="text-white text-xl" />
           </div>
-          <span className="font-heading font-bold text-xl tracking-wide">Nova</span>
+          <span className="font-logo text-2xl tracking-wide">Taski</span>
         </Link>
 
         {/* Desktop Links */}

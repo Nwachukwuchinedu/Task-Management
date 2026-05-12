@@ -142,7 +142,8 @@ const InteractiveMockup = () => {
       <div className="w-56 bg-black/40 border-r border-white/5 flex flex-col z-10 shrink-0">
         <div className="h-14 flex items-center px-4 border-b border-white/5 gap-3">
           <div className="w-6 h-6 rounded bg-gradient-to-tr from-primary to-accent flex items-center justify-center text-xs font-bold shadow-md">N</div>
-          <span className="font-heading font-semibold text-sm">Nova Inc</span>
+          <div className="w-8 h-8 rounded-lg bg-surface border border-surface-border flex items-center justify-center font-logo font-bold text-primary">T</div>
+          <span className="font-heading font-semibold text-sm">Taski Inc</span>
         </div>
         <div className="p-3 space-y-1">
           <div className="text-xs font-semibold text-white/40 uppercase tracking-wider mb-2 px-2 mt-2">Workspace</div>

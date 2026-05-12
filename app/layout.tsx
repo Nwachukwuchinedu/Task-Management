@@ -4,7 +4,7 @@ import { ThemeProvider } from "@/components/ThemeProvider";
 import "./globals.css";
 
 const metadata: Metadata = {
-  title: "Nova | Visual Task Management",
+  title: "Taski | Visual Task Management",
   description: "Plan projects, organize tasks, and collaborate visually with a modern workflow system built for fast-moving teams.",
 };
 
