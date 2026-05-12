@@ -1,17 +1,41 @@
 @import "tailwindcss";
 
+:root {
+  --color-background-var: #f5f4f0;
+  --color-surface-var: #ffffff;
+  --color-surface-border-var: #e2e8f0;
+  --color-text-main-var: #0a0a0a;
+  --color-text-muted-var: #525252;
+  
+  --glass-bg: rgba(0, 0, 0, 0.02);
+  --glass-border: rgba(0, 0, 0, 0.05);
+  --mouse-x: 0px;
+  --mouse-y: 0px;
+}
+
+.dark {
+  --color-background-var: #040509;
+  --color-surface-var: #0B0D14;
+  --color-surface-border-var: #1A1D28;
+  --color-text-main-var: #F8FAFC;
+  --color-text-muted-var: #94A3B8;
+
+  --glass-bg: rgba(255, 255, 255, 0.02);
+  --glass-border: rgba(255, 255, 255, 0.05);
+}
+
 @theme {
   --font-sans: "DM Sans", ui-sans-serif, system-ui, sans-serif;
   --font-heading: "Bricolage Grotesque", ui-sans-serif, system-ui, sans-serif;
 
-  --color-background: #040509;
-  --color-surface: #0B0D14;
-  --color-surface-border: #1A1D28;
+  --color-background: var(--color-background-var);
+  --color-surface: var(--color-surface-var);
+  --color-surface-border: var(--color-surface-border-var);
   --color-primary: #3B82F6;
   --color-accent: #8B5CF6;
   --color-cyan-glow: #06B6D4;
-  --color-text-main: #F8FAFC;
-  --color-text-muted: #94A3B8;
+  --color-text-main: var(--color-text-main-var);
+  --color-text-muted: var(--color-text-muted-var);
 
   --animate-float: float 6s ease-in-out infinite;
   --animate-marquee: marquee 40s linear infinite;
@@ -32,25 +56,18 @@
   }
 }
 
-:root {
-  --glass-bg: rgba(255, 255, 255, 0.02);
-  --glass-border: rgba(255, 255, 255, 0.05);
-  --mouse-x: 0px;
-  --mouse-y: 0px;
-}
-
 @layer base {
   body {
-    background-color: #040509;
-    color: #F8FAFC;
+    background-color: var(--color-background-var);
+    color: var(--color-text-main-var);
     overflow-x: hidden;
-    background-image: radial-gradient(rgba(255, 255, 255, 0.1) 1px, transparent 1px);
+    background-image: radial-gradient(rgba(150, 150, 150, 0.1) 1px, transparent 1px);
     background-size: 24px 24px;
     font-family: var(--font-sans);
   }
 
   * {
-    @apply border-white/10;
+    @apply border-surface-border;
   }
 }
 

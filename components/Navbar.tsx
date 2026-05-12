@@ -1,14 +1,18 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { Kanban, List, X } from "@phosphor-icons/react";
+import { Kanban, List, X, Sun, Moon } from "@phosphor-icons/react";
+import { useTheme } from "next-themes";
 import Link from "next/link";
 
 const Navbar = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const { theme, setTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
+    setMounted(true);
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 60);
     };
@@ -28,7 +32,7 @@ const Navbar = () => {
       id="navbar"
       className={`fixed top-0 left-0 right-0 z-40 transition-all duration-300 border-b ${
         isScrolled
-          ? "bg-background/85 backdrop-blur-xl border-white/[0.07] py-3"
+          ? "bg-background/85 backdrop-blur-xl border-surface-border py-3"
           : "border-transparent py-4"
       }`}
     >
@@ -38,7 +42,7 @@ const Navbar = () => {
           <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-primary to-accent flex items-center justify-center shadow-[0_0_15px_rgba(59,130,246,0.5)] group-hover:animate-glow-pulse transition-shadow duration-300">
             <Kanban weight="bold" className="text-white text-xl" />
           </div>
-          <span className="font-heading font-bold text-xl tracking-wide text-white">Nova</span>
+          <span className="font-heading font-bold text-xl tracking-wide">Nova</span>
         </Link>
 
         {/* Desktop Links */}
@@ -47,7 +51,7 @@ const Navbar = () => {
             <Link
               key={link.name}
               href={link.href}
-              className="hover:text-white transition-colors"
+              className="hover:text-text-main transition-colors"
             >
               {link.name}
             </Link>
@@ -56,9 +60,18 @@ const Navbar = () => {
 
         {/* Actions */}
         <div className="hidden md:flex items-center gap-4">
+          {mounted && (
+            <button
+              onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+              className="text-text-muted hover:text-text-main transition-colors p-2"
+              aria-label="Toggle Theme"
+            >
+              {theme === "dark" ? <Sun size={20} /> : <Moon size={20} />}
+            </button>
+          )}
           <Link
             href="#"
-            className="text-sm font-medium text-text-muted hover:text-white transition-colors"
+            className="text-sm font-medium text-text-muted hover:text-text-main transition-colors"
           >
             Log in
           </Link>
