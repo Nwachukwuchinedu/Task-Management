@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
+import mongoose from "mongoose";
 import { auth } from "@/lib/auth";
 import { connectDB } from "@/lib/db";
-import { Task } from "@/lib/models";
+import { Task, Board } from "@/lib/models";
 
 export async function PUT(
   request: NextRequest,
@@ -34,6 +35,26 @@ export async function PUT(
       return NextResponse.json(
         { success: false, error: "Task not found" },
         { status: 404 }
+      );
+    }
+
+    const board = await Board.findById(task.board);
+
+    if (!board) {
+      return NextResponse.json(
+        { success: false, error: "Board not found" },
+        { status: 404 }
+      );
+    }
+
+    const isBoardMember = board.members.some(
+      (m: { user: mongoose.Types.ObjectId }) => m.user.toString() === session.user.id
+    );
+
+    if (!isBoardMember) {
+      return NextResponse.json(
+        { success: false, error: "Only board members can move tasks" },
+        { status: 403 }
       );
     }
 

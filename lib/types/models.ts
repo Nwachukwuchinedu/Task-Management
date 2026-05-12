@@ -23,6 +23,11 @@ export interface IWorkspace {
   updatedAt: string;
 }
 
+export interface IBoardMember {
+  user: string | IUser;
+  role: "admin" | "member";
+}
+
 export interface IBoard {
   _id: string;
   name: string;
@@ -30,6 +35,7 @@ export interface IBoard {
   color: string;
   workspace: string;
   columns: IColumn[];
+  members: IBoardMember[];
   createdAt: string;
   updatedAt: string;
 }
@@ -70,4 +76,24 @@ export interface IUser {
   name: string;
   email: string;
   avatar?: string;
+}
+
+export interface IInvitation {
+  _id: string;
+  workspace: {
+    _id: string;
+    name: string;
+    icon: string;
+    color: string;
+  };
+  inviter: {
+    _id: string;
+    name: string;
+    email: string;
+    avatar?: string;
+  };
+  inviteeEmail: string;
+  status: "pending" | "accepted" | "declined";
+  createdAt: string;
+  updatedAt: string;
 }

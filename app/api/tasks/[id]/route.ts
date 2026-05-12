@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
+import mongoose from "mongoose";
 import { auth } from "@/lib/auth";
 import { connectDB } from "@/lib/db";
-import { Task } from "@/lib/models";
+import { Task, Board } from "@/lib/models";
 
 export async function GET(
   _request: NextRequest,
@@ -64,6 +65,28 @@ export async function PUT(
       );
     }
 
+    const board = await Board.findById(task.board);
+
+    if (!board) {
+      return NextResponse.json(
+        { success: false, error: "Board not found" },
+        { status: 404 }
+      );
+    }
+
+    const isBoardMember = board.members.some(
+      (m: { user: mongoose.Types.ObjectId }) => m.user.toString() === session.user.id
+    );
+
+    const isAssignee = task.assignee?.toString() === session.user.id;
+
+    if (!isBoardMember && !isAssignee) {
+      return NextResponse.json(
+        { success: false, error: "Access denied" },
+        { status: 403 }
+      );
+    }
+
     Object.assign(task, updates);
     await task.save();
 
@@ -92,7 +115,7 @@ export async function DELETE(
     const { id } = await params;
     await connectDB();
 
-    const task = await Task.findByIdAndDelete(id);
+    const task = await Task.findById(id);
 
     if (!task) {
       return NextResponse.json(
@@ -100,6 +123,28 @@ export async function DELETE(
         { status: 404 }
       );
     }
+
+    const board = await Board.findById(task.board);
+
+    if (!board) {
+      return NextResponse.json(
+        { success: false, error: "Board not found" },
+        { status: 404 }
+      );
+    }
+
+    const isBoardMember = board.members.some(
+      (m: { user: mongoose.Types.ObjectId }) => m.user.toString() === session.user.id
+    );
+
+    if (!isBoardMember) {
+      return NextResponse.json(
+        { success: false, error: "Only board members can delete tasks" },
+        { status: 403 }
+      );
+    }
+
+    await Task.findByIdAndDelete(id);
 
     return NextResponse.json({ success: true, message: "Task deleted" });
   } catch (error) {

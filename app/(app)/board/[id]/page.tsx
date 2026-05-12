@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
 import {
   DndContext,
   DragOverlay,
@@ -23,33 +24,35 @@ import {
 import { CSS } from "@dnd-kit/utilities";
 import {
   Plus,
-  DotsThree,
   PencilSimple,
   Trash,
   Calendar,
-  User,
+  Users,
+  CaretDown,
+  X,
 } from "@phosphor-icons/react";
 import { TopBar } from "@/components/layout";
 import {
   Button,
-  Card,
   Modal,
   Input,
   Dropdown,
   Avatar,
   Badge,
+  Card,
 } from "@/components/ui";
 import { useToast } from "@/components/ui/Toast";
 import { useBoardStore } from "@/stores";
-import { IColumn, ITask } from "@/lib/types/models";
+import { IColumn, ITask, IUser, IBoardMember } from "@/lib/types/models";
 
 interface TaskCardProps {
   task: ITask;
   onClick: () => void;
   onDelete: () => void;
+  canEdit: boolean;
 }
 
-function TaskCard({ task, onClick, onDelete }: TaskCardProps) {
+function TaskCard({ task, onClick, onDelete, canEdit }: TaskCardProps) {
   const {
     attributes,
     listeners,
@@ -57,7 +60,7 @@ function TaskCard({ task, onClick, onDelete }: TaskCardProps) {
     transform,
     transition,
     isDragging,
-  } = useSortable({ id: task._id, data: { type: "task", task } });
+  } = useSortable({ id: task._id, data: { type: "task", task }, disabled: !canEdit });
 
   const style = {
     transform: CSS.Transform.toString(transform),
@@ -77,28 +80,30 @@ function TaskCard({ task, onClick, onDelete }: TaskCardProps) {
       style={style}
       {...attributes}
       {...listeners}
-      className="glass-card p-3 cursor-grab active:cursor-grabbing hover:border-white/10 transition-all"
-      onClick={onClick}
+      className={`glass-card p-3 transition-all ${canEdit ? "cursor-grab active:cursor-grabbing hover:border-white/10" : "cursor-default"}`}
+      onClick={canEdit ? onClick : undefined}
     >
       <div className="flex items-start justify-between gap-2 mb-2">
         <Badge variant={priorityColors[task.priority]} size="sm">
           {task.priority}
         </Badge>
-        <Dropdown
-          items={[
-            {
-              label: "Edit",
-              icon: <PencilSimple size={14} />,
-              onClick: onClick,
-            },
-            {
-              label: "Delete",
-              icon: <Trash size={14} />,
-              onClick: onDelete,
-              variant: "danger",
-            },
-          ]}
-        />
+        {canEdit && (
+          <Dropdown
+            items={[
+              {
+                label: "Edit",
+                icon: <PencilSimple size={14} />,
+                onClick: onClick,
+              },
+              {
+                label: "Delete",
+                icon: <Trash size={14} />,
+                onClick: onDelete,
+                variant: "danger",
+              },
+            ]}
+          />
+        )}
       </div>
 
       <h4 className="text-sm font-medium text-white mb-2 line-clamp-2">
@@ -140,6 +145,7 @@ interface ColumnProps {
   onDeleteColumn: () => void;
   onTaskClick: (task: ITask) => void;
   onTaskDelete: (taskId: string) => void;
+  canEdit: boolean;
 }
 
 function Column({
@@ -149,6 +155,7 @@ function Column({
   onDeleteColumn,
   onTaskClick,
   onTaskDelete,
+  canEdit,
 }: ColumnProps) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
     useSortable({
@@ -181,21 +188,23 @@ function Column({
             {column.tasks?.length || 0}
           </span>
         </div>
-        <Dropdown
-          items={[
-            {
-              label: "Edit",
-              icon: <PencilSimple size={14} />,
-              onClick: onEditColumn,
-            },
-            {
-              label: "Delete",
-              icon: <Trash size={14} />,
-              onClick: onDeleteColumn,
-              variant: "danger",
-            },
-          ]}
-        />
+        {canEdit && (
+          <Dropdown
+            items={[
+              {
+                label: "Edit",
+                icon: <PencilSimple size={14} />,
+                onClick: onEditColumn,
+              },
+              {
+                label: "Delete",
+                icon: <Trash size={14} />,
+                onClick: onDeleteColumn,
+                variant: "danger",
+              },
+            ]}
+          />
+        )}
       </div>
 
       <div className="flex-1 overflow-y-auto p-3 space-y-3">
@@ -209,22 +218,25 @@ function Column({
               task={task}
               onClick={() => onTaskClick(task)}
               onDelete={() => onTaskDelete(task._id)}
+              canEdit={canEdit}
             />
           ))}
         </SortableContext>
       </div>
 
-      <div className="p-3 border-t border-white/5">
-        <Button
-          variant="ghost"
-          size="sm"
-          className="w-full justify-start"
-          onClick={onAddTask}
-        >
-          <Plus size={16} />
-          Add Task
-        </Button>
-      </div>
+      {canEdit && (
+        <div className="p-3 border-t border-white/5">
+          <Button
+            variant="ghost"
+            size="sm"
+            className="w-full justify-start"
+            onClick={onAddTask}
+          >
+            <Plus size={16} />
+            Add Task
+          </Button>
+        </div>
+      )}
     </div>
   );
 }
@@ -232,6 +244,7 @@ function Column({
 export default function BoardPage() {
   const params = useParams();
   const router = useRouter();
+  const { data: session } = useSession();
   const { showToast } = useToast();
   const {
     currentBoard,
@@ -252,10 +265,14 @@ export default function BoardPage() {
   const [showCreateTask, setShowCreateTask] = useState(false);
   const [showEditTask, setShowEditTask] = useState(false);
   const [showEditColumn, setShowEditColumn] = useState(false);
+  const [showManageMembers, setShowManageMembers] = useState(false);
   const [selectedColumn, setSelectedColumn] = useState<IColumn | null>(null);
   const [selectedTask, setSelectedTask] = useState<ITask | null>(null);
   const [activeTask, setActiveTask] = useState<ITask | null>(null);
   const [isCreating, setIsCreating] = useState(false);
+  const [workspaceMembers, setWorkspaceMembers] = useState<IUser[]>([]);
+  const [boardMembers, setBoardMembers] = useState<IBoardMember[]>([]);
+  const [inviteEmail, setInviteEmail] = useState("");
 
   const [columnName, setColumnName] = useState("");
   const [taskForm, setTaskForm] = useState({
@@ -263,6 +280,7 @@ export default function BoardPage() {
     description: "",
     priority: "medium" as "low" | "medium" | "high",
     dueDate: "",
+    assigneeId: "",
   });
 
   const sensors = useSensors(
@@ -274,6 +292,12 @@ export default function BoardPage() {
     useSensor(KeyboardSensor)
   );
 
+  const isBoardMember = currentBoard?.members?.some(
+    (m) => (typeof m.user === "string" ? m.user : m.user?._id) === session?.user?.id
+  ) || false;
+
+  const canEditBoard = isBoardMember;
+
   useEffect(() => {
     async function fetchBoard() {
       setLoading(true);
@@ -283,6 +307,7 @@ export default function BoardPage() {
 
         if (data.success) {
           setCurrentBoard(data.data);
+          setBoardMembers(data.data.members || []);
         } else {
           showToast("error", data.error || "Failed to load board");
           router.push("/dashboard");
@@ -297,6 +322,81 @@ export default function BoardPage() {
 
     fetchBoard();
   }, [params.id, setCurrentBoard, setLoading, showToast, router]);
+
+  useEffect(() => {
+    async function fetchWorkspaceMembers() {
+      if (!currentBoard?.workspace) return;
+
+      try {
+        const res = await fetch(`/api/workspaces/${currentBoard.workspace}`);
+        const data = await res.json();
+
+        if (data.success) {
+          const members = (data.data.members || []).map((m: unknown) => {
+            if (typeof m === "object" && m !== null) {
+              return (m as { _id?: string; name?: string; email?: string; avatar?: string })._id
+                ? m as IUser
+                : { _id: String(m), name: "User", email: "", avatar: "" };
+            }
+            return { _id: String(m), name: "User", email: "", avatar: "" };
+          });
+          setWorkspaceMembers(members);
+        }
+      } catch (error) {
+        console.error("Failed to fetch workspace members:", error);
+      }
+    }
+
+    fetchWorkspaceMembers();
+  }, [currentBoard?.workspace]);
+
+  const handleAddBoardMember = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!inviteEmail.trim()) return;
+
+    try {
+      const res = await fetch(`/api/boards/${params.id}/members`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: inviteEmail }),
+      });
+
+      const data = await res.json();
+
+      if (data.success) {
+        setBoardMembers(data.data);
+        setInviteEmail("");
+        showToast("success", "Member added to board!");
+      } else {
+        showToast("error", data.error || "Failed to add member");
+      }
+    } catch {
+      showToast("error", "Something went wrong");
+    }
+  };
+
+  const handleRemoveBoardMember = async (userId: string) => {
+    try {
+      const res = await fetch(`/api/boards/${params.id}/members`, {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId }),
+      });
+
+      const data = await res.json();
+
+      if (data.success) {
+        setBoardMembers((prev) =>
+          prev.filter((m) => (typeof m.user === "string" ? m.user : m.user?._id) !== userId)
+        );
+        showToast("success", "Member removed from board");
+      } else {
+        showToast("error", data.error || "Failed to remove member");
+      }
+    } catch {
+      showToast("error", "Something went wrong");
+    }
+  };
 
   const handleDragStart = useCallback((event: DragStartEvent) => {
     const { active } = event;
@@ -492,7 +592,11 @@ export default function BoardPage() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          ...taskForm,
+          title: taskForm.title,
+          description: taskForm.description,
+          priority: taskForm.priority,
+          dueDate: taskForm.dueDate || undefined,
+          assignee: taskForm.assigneeId || undefined,
           columnId: selectedColumn._id,
           boardId: currentBoard._id,
         }),
@@ -502,7 +606,7 @@ export default function BoardPage() {
 
       if (data.success) {
         addTask(selectedColumn._id, data.data);
-        setTaskForm({ title: "", description: "", priority: "medium", dueDate: "" });
+        setTaskForm({ title: "", description: "", priority: "medium", dueDate: "", assigneeId: "" });
         setShowCreateTask(false);
         setSelectedColumn(null);
         showToast("success", "Task created!");
@@ -529,6 +633,7 @@ export default function BoardPage() {
           description: taskForm.description,
           priority: taskForm.priority,
           dueDate: taskForm.dueDate || undefined,
+          assignee: taskForm.assigneeId || undefined,
         }),
       });
 
@@ -538,7 +643,7 @@ export default function BoardPage() {
         updateTask(selectedTask._id, data.data);
         setShowEditTask(false);
         setSelectedTask(null);
-        setTaskForm({ title: "", description: "", priority: "medium", dueDate: "" });
+        setTaskForm({ title: "", description: "", priority: "medium", dueDate: "", assigneeId: "" });
         showToast("success", "Task updated!");
       } else {
         showToast("error", data.error || "Failed to update task");
@@ -575,7 +680,7 @@ export default function BoardPage() {
 
   const openCreateTask = (column: IColumn) => {
     setSelectedColumn(column);
-    setTaskForm({ title: "", description: "", priority: "medium", dueDate: "" });
+    setTaskForm({ title: "", description: "", priority: "medium", dueDate: "", assigneeId: "" });
     setShowCreateTask(true);
   };
 
@@ -586,6 +691,7 @@ export default function BoardPage() {
       description: task.description || "",
       priority: task.priority,
       dueDate: task.dueDate ? task.dueDate.split("T")[0] : "",
+      assigneeId: task.assignee?._id || "",
     });
     setShowEditTask(true);
   };
@@ -623,6 +729,12 @@ export default function BoardPage() {
         title={currentBoard.name}
         showBack
         onBack={() => router.push(`/workspace/${currentBoard.workspace}`)}
+        actions={
+          <Button variant="secondary" size="sm" onClick={() => setShowManageMembers(true)}>
+            <Users size={16} />
+            Members ({boardMembers.length})
+          </Button>
+        }
       />
 
       <div className="flex-1 overflow-x-auto p-6">
@@ -647,20 +759,23 @@ export default function BoardPage() {
                   onDeleteColumn={() => handleDeleteColumn(column)}
                   onTaskClick={openEditTask}
                   onTaskDelete={handleDeleteTask}
+                  canEdit={canEditBoard}
                 />
               ))}
             </SortableContext>
 
-            <div className="w-[300px] flex-shrink-0">
-              <Button
-                variant="secondary"
-                className="w-full h-12 border-dashed"
-                onClick={() => setShowAddColumn(true)}
-              >
-                <Plus size={18} />
-                Add Column
-              </Button>
-            </div>
+            {canEditBoard && (
+              <div className="w-[300px] flex-shrink-0">
+                <Button
+                  variant="secondary"
+                  className="w-full h-12 border-dashed"
+                  onClick={() => setShowAddColumn(true)}
+                >
+                  <Plus size={18} />
+                  Add Column
+                </Button>
+              </div>
+            )}
           </div>
 
           <DragOverlay>
@@ -674,6 +789,60 @@ export default function BoardPage() {
           </DragOverlay>
         </DndContext>
       </div>
+
+      <Modal isOpen={showManageMembers} onClose={() => setShowManageMembers(false)} title="Board Members" size="lg">
+        <div className="space-y-6">
+          <div>
+            <h3 className="text-sm font-medium text-text-secondary mb-3">Current Members</h3>
+            <div className="space-y-2">
+              {boardMembers.map((member) => {
+                const userId = typeof member.user === "string" ? member.user : member.user?._id;
+                const userName = typeof member.user === "string" ? "User" : member.user?.name || "User";
+                const userAvatar = typeof member.user === "object" ? member.user?.avatar : undefined;
+
+                return (
+                  <div key={userId} className="flex items-center justify-between p-3 rounded-lg bg-white/5">
+                    <div className="flex items-center gap-3">
+                      <Avatar src={userAvatar} name={userName} size="sm" />
+                      <div>
+                        <p className="text-sm text-white">{userName}</p>
+                        <p className="text-xs text-text-muted capitalize">{member.role}</p>
+                      </div>
+                    </div>
+                    {userId !== session?.user?.id && (
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => handleRemoveBoardMember(userId!)}
+                      >
+                        <X size={14} />
+                      </Button>
+                    )}
+                  </div>
+                );
+              })}
+              {boardMembers.length === 0 && (
+                <p className="text-sm text-text-muted">No board members yet</p>
+              )}
+            </div>
+          </div>
+
+          <div>
+            <h3 className="text-sm font-medium text-text-secondary mb-3">Add Workspace Member</h3>
+            <form onSubmit={handleAddBoardMember} className="flex gap-2">
+              <Input
+                placeholder="Member email"
+                value={inviteEmail}
+                onChange={(e) => setInviteEmail(e.target.value)}
+              />
+              <Button type="submit">Add</Button>
+            </form>
+            <p className="text-xs text-text-muted mt-2">
+              Only workspace members can be added to the board
+            </p>
+          </div>
+        </div>
+      </Modal>
 
       <Modal
         isOpen={showAddColumn}
@@ -744,7 +913,7 @@ export default function BoardPage() {
         onClose={() => {
           setShowCreateTask(false);
           setSelectedColumn(null);
-          setTaskForm({ title: "", description: "", priority: "medium", dueDate: "" });
+          setTaskForm({ title: "", description: "", priority: "medium", dueDate: "", assigneeId: "" });
         }}
         title={`Add Task to ${selectedColumn?.name}`}
       >
@@ -796,6 +965,24 @@ export default function BoardPage() {
             </div>
           </div>
 
+          <div>
+            <label className="block text-sm font-medium text-text-secondary mb-2">
+              Assignee
+            </label>
+            <select
+              className="w-full h-11 px-4 bg-surface border border-surface-border rounded-lg text-white focus:outline-none focus:border-primary"
+              value={taskForm.assigneeId}
+              onChange={(e) => setTaskForm({ ...taskForm, assigneeId: e.target.value })}
+            >
+              <option value="">Unassigned</option>
+              {workspaceMembers.map((member) => (
+                <option key={member._id} value={member._id}>
+                  {member.name}
+                </option>
+              ))}
+            </select>
+          </div>
+
           <Input
             label="Due Date (optional)"
             type="date"
@@ -824,7 +1011,7 @@ export default function BoardPage() {
         onClose={() => {
           setShowEditTask(false);
           setSelectedTask(null);
-          setTaskForm({ title: "", description: "", priority: "medium", dueDate: "" });
+          setTaskForm({ title: "", description: "", priority: "medium", dueDate: "", assigneeId: "" });
         }}
         title="Edit Task"
       >
@@ -873,6 +1060,24 @@ export default function BoardPage() {
                 </button>
               ))}
             </div>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-text-secondary mb-2">
+              Assignee
+            </label>
+            <select
+              className="w-full h-11 px-4 bg-surface border border-surface-border rounded-lg text-white focus:outline-none focus:border-primary"
+              value={taskForm.assigneeId}
+              onChange={(e) => setTaskForm({ ...taskForm, assigneeId: e.target.value })}
+            >
+              <option value="">Unassigned</option>
+              {workspaceMembers.map((member) => (
+                <option key={member._id} value={member._id}>
+                  {member.name}
+                </option>
+              ))}
+            </select>
           </div>
 
           <Input

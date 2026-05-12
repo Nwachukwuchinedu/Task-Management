@@ -4,3 +4,4 @@ export { default as User, type IUser } from "./user";
 export { default as Column, type IColumn } from "./column";
 export { default as Board, type IBoard } from "./board";
 export { default as Workspace, type IWorkspace } from "./workspace";
+export { default as Invitation, type IInvitation } from "./invitation";

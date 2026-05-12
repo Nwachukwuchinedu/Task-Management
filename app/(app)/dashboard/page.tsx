@@ -9,12 +9,15 @@ import {
   Users,
   ArrowRight,
   Rocket,
+  Envelope,
+  Check,
+  X,
 } from "@phosphor-icons/react";
 import { TopBar } from "@/components/layout";
-import { Button, Card, Modal, Input } from "@/components/ui";
+import { Button, Card, Modal, Input, Avatar } from "@/components/ui";
 import { useToast } from "@/components/ui/Toast";
 import { useWorkspaceStore } from "@/stores";
-import { IWorkspace, IBoard } from "@/lib/types/models";
+import { IWorkspace, IBoard, IInvitation } from "@/lib/types/models";
 
 const WORKSPACE_ICONS = ["🚀", "💼", "🎨", "📚", "⚡", "💡", "🎯", "🏆"];
 const WORKSPACE_COLORS = [
@@ -35,7 +38,9 @@ export default function DashboardPage() {
   const { workspaces, setWorkspaces, addWorkspace, isLoading: workspacesLoading } = useWorkspaceStore();
 
   const [boards, setBoards] = useState<IBoard[]>([]);
+  const [invitations, setInvitations] = useState<IInvitation[]>([]);
   const [isLoadingBoards, setIsLoadingBoards] = useState(true);
+  const [isLoadingInvitations, setIsLoadingInvitations] = useState(true);
   const [showCreateWorkspace, setShowCreateWorkspace] = useState(false);
   const [showCreateBoard, setShowCreateBoard] = useState(false);
   const [selectedWorkspace, setSelectedWorkspace] = useState<IWorkspace | null>(null);
@@ -61,6 +66,24 @@ export default function DashboardPage() {
   }, [searchParams]);
 
   useEffect(() => {
+    async function fetchInvitations() {
+      try {
+        const res = await fetch("/api/invitations");
+        const data = await res.json();
+        if (data.success) {
+          setInvitations(data.data);
+        }
+      } catch (error) {
+        console.error("Failed to fetch invitations:", error);
+      } finally {
+        setIsLoadingInvitations(false);
+      }
+    }
+
+    fetchInvitations();
+  }, []);
+
+  useEffect(() => {
     async function fetchBoards() {
       try {
         const res = await fetch("/api/boards");
@@ -81,6 +104,43 @@ export default function DashboardPage() {
       setIsLoadingBoards(false);
     }
   }, [workspaces.length]);
+
+  const handleAcceptInvitation = async (invitationId: string) => {
+    try {
+      const res = await fetch(`/api/invitations/${invitationId}/accept`, {
+        method: "POST",
+      });
+      const data = await res.json();
+
+      if (data.success) {
+        setInvitations((prev) => prev.filter((i) => i._id !== invitationId));
+        showToast("success", "You've joined the workspace!");
+        window.location.reload();
+      } else {
+        showToast("error", data.error || "Failed to accept invitation");
+      }
+    } catch {
+      showToast("error", "Something went wrong");
+    }
+  };
+
+  const handleDeclineInvitation = async (invitationId: string) => {
+    try {
+      const res = await fetch(`/api/invitations/${invitationId}/decline`, {
+        method: "POST",
+      });
+      const data = await res.json();
+
+      if (data.success) {
+        setInvitations((prev) => prev.filter((i) => i._id !== invitationId));
+        showToast("info", "Invitation declined");
+      } else {
+        showToast("error", data.error || "Failed to decline invitation");
+      }
+    } catch {
+      showToast("error", "Something went wrong");
+    }
+  };
 
   const handleCreateWorkspace = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -159,6 +219,54 @@ export default function DashboardPage() {
       <TopBar title="Dashboard" />
 
       <div className="p-6 max-w-7xl mx-auto">
+        {!isLoadingInvitations && invitations.length > 0 && (
+          <div className="mb-8">
+            <h2 className="text-lg font-heading font-semibold text-white mb-4 flex items-center gap-2">
+              <Envelope size={20} className="text-primary" />
+              Pending Invitations
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {invitations.map((invitation) => (
+                <Card key={invitation._id} className="p-4">
+                  <div className="flex items-start gap-4">
+                    <div
+                      className="w-12 h-12 rounded-xl flex items-center justify-center text-2xl"
+                      style={{ backgroundColor: `${invitation.workspace?.color || "#3B82F6"}20` }}
+                    >
+                      {invitation.workspace?.icon || "📋"}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <h4 className="font-heading font-semibold text-white truncate">
+                        {invitation.workspace?.name || "Workspace"}
+                      </h4>
+                      <p className="text-xs text-text-muted mt-1">
+                        Invited by {invitation.inviter?.name || "someone"}
+                      </p>
+                      <div className="flex gap-2 mt-3">
+                        <Button
+                          size="sm"
+                          onClick={() => handleAcceptInvitation(invitation._id)}
+                        >
+                          <Check size={14} weight="bold" />
+                          Accept
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => handleDeclineInvitation(invitation._id)}
+                        >
+                          <X size={14} />
+                          Decline
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                </Card>
+              ))}
+            </div>
+          </div>
+        )}
+
         <div className="flex items-center justify-between mb-8">
           <div>
             <h2 className="text-2xl font-heading font-bold text-white mb-1">

@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
+import mongoose from "mongoose";
 import { auth } from "@/lib/auth";
 import { connectDB } from "@/lib/db";
-import { Task, Column } from "@/lib/models";
+import { Task, Column, Board, Workspace } from "@/lib/models";
 
 export async function POST(request: NextRequest) {
   try {
@@ -23,6 +24,26 @@ export async function POST(request: NextRequest) {
     }
 
     await connectDB();
+
+    const board = await Board.findById(boardId);
+
+    if (!board) {
+      return NextResponse.json(
+        { success: false, error: "Board not found" },
+        { status: 404 }
+      );
+    }
+
+    const isBoardMember = board.members.some(
+      (m: { user: mongoose.Types.ObjectId }) => m.user.toString() === session.user.id
+    );
+
+    if (!isBoardMember) {
+      return NextResponse.json(
+        { success: false, error: "Only board members can create tasks" },
+        { status: 403 }
+      );
+    }
 
     const maxPosition = await Task.findOne({ column: columnId })
       .sort({ position: -1 })

@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
+import mongoose from "mongoose";
 import { auth } from "@/lib/auth";
 import { connectDB } from "@/lib/db";
-import { Workspace, User } from "@/lib/models";
+import { Workspace, User, Invitation } from "@/lib/models";
 
 export async function POST(
   request: NextRequest,
@@ -39,36 +40,54 @@ export async function POST(
 
     if (workspace.owner.toString() !== session.user.id) {
       return NextResponse.json(
-        { success: false, error: "Only owner can add members" },
+        { success: false, error: "Only workspace owner can invite members" },
         { status: 403 }
       );
     }
 
-    const userToAdd = await User.findOne({ email });
+    const userToInvite = await User.findOne({ email });
 
-    if (!userToAdd) {
-      return NextResponse.json(
-        { success: false, error: "User not found" },
-        { status: 404 }
+    if (userToInvite) {
+      const isAlreadyMember = workspace.members.some(
+        (m: mongoose.Types.ObjectId) => m.toString() === userToInvite._id.toString()
       );
+
+      if (isAlreadyMember) {
+        return NextResponse.json(
+          { success: false, error: "User is already a member" },
+          { status: 400 }
+        );
+      }
     }
 
-    if (workspace.members.includes(userToAdd._id)) {
+    const existingInvitation = await Invitation.findOne({
+      workspace: id,
+      inviteeEmail: email.toLowerCase(),
+      status: "pending",
+    });
+
+    if (existingInvitation) {
       return NextResponse.json(
-        { success: false, error: "User is already a member" },
+        { success: false, error: "Invitation already sent to this email" },
         { status: 400 }
       );
     }
 
-    workspace.members.push(userToAdd._id);
-    await workspace.save();
+    const invitation = await Invitation.create({
+      workspace: id,
+      inviter: session.user.id,
+      inviteeEmail: email.toLowerCase(),
+    });
 
-    await workspace.populate("owner", "name email avatar");
-    await workspace.populate("members", "name email avatar");
+    await invitation.populate("workspace", "name icon color");
+    await invitation.populate("inviter", "name email avatar");
 
-    return NextResponse.json({ success: true, data: workspace });
+    return NextResponse.json(
+      { success: true, data: invitation, message: "Invitation sent" },
+      { status: 201 }
+    );
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Failed to add member";
+    const message = error instanceof Error ? error.message : "Failed to invite member";
     return NextResponse.json({ success: false, error: message }, { status: 500 });
   }
 }

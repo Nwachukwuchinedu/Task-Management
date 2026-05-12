@@ -6,6 +6,10 @@ export interface IBoard extends Document {
   color: string;
   workspace: mongoose.Types.ObjectId;
   columns: mongoose.Types.ObjectId[];
+  members: {
+    user: mongoose.Types.ObjectId;
+    role: "admin" | "member";
+  }[];
   createdAt: Date;
   updatedAt: Date;
 }
@@ -36,6 +40,12 @@ const BoardSchema = new Schema<IBoard>(
       {
         type: Schema.Types.ObjectId,
         ref: "Column",
+      },
+    ],
+    members: [
+      {
+        user: { type: Schema.Types.ObjectId, ref: "User" },
+        role: { type: String, enum: ["admin", "member"], default: "member" },
       },
     ],
   },
