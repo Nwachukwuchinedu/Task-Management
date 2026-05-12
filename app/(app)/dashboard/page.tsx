@@ -1,0 +1,391 @@
+"use client";
+
+import React, { useEffect, useState } from "react";
+import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
+import {
+  Plus,
+  Kanban,
+  Users,
+  ArrowRight,
+  Rocket,
+} from "@phosphor-icons/react";
+import { TopBar } from "@/components/layout";
+import { Button, Card, Modal, Input } from "@/components/ui";
+import { useToast } from "@/components/ui/Toast";
+import { useWorkspaceStore } from "@/stores";
+import { IWorkspace, IBoard } from "@/lib/types/models";
+
+const WORKSPACE_ICONS = ["🚀", "💼", "🎨", "📚", "⚡", "💡", "🎯", "🏆"];
+const WORKSPACE_COLORS = [
+  "#3B82F6",
+  "#8B5CF6",
+  "#EC4899",
+  "#10B981",
+  "#F59E0B",
+  "#EF4444",
+  "#06B6D4",
+  "#84CC16",
+];
+
+export default function DashboardPage() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const { showToast } = useToast();
+  const { workspaces, setWorkspaces, addWorkspace, isLoading: workspacesLoading } = useWorkspaceStore();
+
+  const [boards, setBoards] = useState<IBoard[]>([]);
+  const [isLoadingBoards, setIsLoadingBoards] = useState(true);
+  const [showCreateWorkspace, setShowCreateWorkspace] = useState(false);
+  const [showCreateBoard, setShowCreateBoard] = useState(false);
+  const [selectedWorkspace, setSelectedWorkspace] = useState<IWorkspace | null>(null);
+  const [isCreating, setIsCreating] = useState(false);
+
+  const [workspaceForm, setWorkspaceForm] = useState({
+    name: "",
+    description: "",
+    icon: "🚀",
+    color: "#3B82F6",
+  });
+
+  const [boardForm, setBoardForm] = useState({
+    name: "",
+    description: "",
+    color: "#3B82F6",
+  });
+
+  useEffect(() => {
+    if (searchParams.get("create") === "workspace") {
+      setShowCreateWorkspace(true);
+    }
+  }, [searchParams]);
+
+  useEffect(() => {
+    async function fetchBoards() {
+      try {
+        const res = await fetch("/api/boards");
+        const data = await res.json();
+        if (data.success) {
+          setBoards(data.data);
+        }
+      } catch (error) {
+        console.error("Failed to fetch boards:", error);
+      } finally {
+        setIsLoadingBoards(false);
+      }
+    }
+
+    if (workspaces.length > 0) {
+      fetchBoards();
+    } else {
+      setIsLoadingBoards(false);
+    }
+  }, [workspaces.length]);
+
+  const handleCreateWorkspace = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!workspaceForm.name.trim()) {
+      showToast("error", "Workspace name is required");
+      return;
+    }
+
+    setIsCreating(true);
+
+    try {
+      const res = await fetch("/api/workspaces", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(workspaceForm),
+      });
+
+      const data = await res.json();
+
+      if (data.success) {
+        addWorkspace(data.data);
+        setShowCreateWorkspace(false);
+        setWorkspaceForm({ name: "", description: "", icon: "🚀", color: "#3B82F6" });
+        showToast("success", "Workspace created!");
+        router.push(`/workspace/${data.data._id}`);
+      } else {
+        showToast("error", data.error || "Failed to create workspace");
+      }
+    } catch {
+      showToast("error", "Something went wrong");
+    } finally {
+      setIsCreating(false);
+    }
+  };
+
+  const handleCreateBoard = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!boardForm.name.trim() || !selectedWorkspace) {
+      showToast("error", "Board name and workspace are required");
+      return;
+    }
+
+    setIsCreating(true);
+
+    try {
+      const res = await fetch("/api/boards", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          ...boardForm,
+          workspaceId: selectedWorkspace._id,
+        }),
+      });
+
+      const data = await res.json();
+
+      if (data.success) {
+        setBoards((prev) => [data.data, ...prev]);
+        setShowCreateBoard(false);
+        setBoardForm({ name: "", description: "", color: "#3B82F6" });
+        setSelectedWorkspace(null);
+        showToast("success", "Board created!");
+        router.push(`/board/${data.data._id}`);
+      } else {
+        showToast("error", data.error || "Failed to create board");
+      }
+    } catch {
+      showToast("error", "Something went wrong");
+    } finally {
+      setIsCreating(false);
+    }
+  };
+
+  return (
+    <div className="min-h-full">
+      <TopBar title="Dashboard" />
+
+      <div className="p-6 max-w-7xl mx-auto">
+        <div className="flex items-center justify-between mb-8">
+          <div>
+            <h2 className="text-2xl font-heading font-bold text-white mb-1">
+              Your Workspaces
+            </h2>
+            <p className="text-text-muted">
+              Organize your projects into workspaces
+            </p>
+          </div>
+          <Button onClick={() => setShowCreateWorkspace(true)}>
+            <Plus size={18} weight="bold" />
+            New Workspace
+          </Button>
+        </div>
+
+        {workspacesLoading || isLoadingBoards ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {[1, 2, 3].map((i) => (
+              <Card key={i} className="h-32 animate-pulse">
+                <div className="h-full bg-white/5 rounded-xl" />
+              </Card>
+            ))}
+          </div>
+        ) : workspaces.length === 0 ? (
+          <div className="text-center py-16">
+            <div className="w-20 h-20 mx-auto mb-6 rounded-2xl bg-surface-border flex items-center justify-center">
+              <Rocket size={40} className="text-text-muted" />
+            </div>
+            <h3 className="text-xl font-heading font-semibold text-white mb-2">
+              No workspaces yet
+            </h3>
+            <p className="text-text-muted mb-6 max-w-md mx-auto">
+              Create your first workspace to start organizing your team's projects
+            </p>
+            <Button onClick={() => setShowCreateWorkspace(true)}>
+              <Plus size={18} weight="bold" />
+              Create Workspace
+            </Button>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-12">
+            {workspaces.map((workspace) => {
+              const workspaceBoards = boards.filter(
+                (b) => (b.workspace as unknown as { _id: string })?._id === workspace._id ||
+                       b.workspace === workspace._id
+              );
+
+              return (
+                <Link key={workspace._id} href={`/workspace/${workspace._id}`}>
+                  <Card hover className="p-5 h-full">
+                    <div className="flex items-start gap-4">
+                      <div
+                        className="w-12 h-12 rounded-xl flex items-center justify-center text-2xl"
+                        style={{ backgroundColor: `${workspace.color}20` }}
+                      >
+                        {workspace.icon}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <h3 className="font-heading font-semibold text-white truncate">
+                          {workspace.name}
+                        </h3>
+                        {workspace.description && (
+                          <p className="text-sm text-text-muted line-clamp-2 mt-1">
+                            {workspace.description}
+                          </p>
+                        )}
+                        <div className="flex items-center gap-4 mt-3 text-xs text-text-muted">
+                          <span className="flex items-center gap-1">
+                            <Kanban size={14} />
+                            {workspaceBoards.length} boards
+                          </span>
+                          <span className="flex items-center gap-1">
+                            <Users size={14} />
+                            {workspace.members?.length || 1}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </Card>
+                </Link>
+              );
+            })}
+
+            <Card
+              hover
+              className="p-5 h-full flex items-center justify-center border-dashed cursor-pointer"
+              onClick={() => setShowCreateWorkspace(true)}
+            >
+              <div className="text-center">
+                <div className="w-12 h-12 mx-auto mb-3 rounded-xl bg-white/5 flex items-center justify-center">
+                  <Plus size={24} className="text-text-muted" />
+                </div>
+                <p className="text-sm text-text-muted">New Workspace</p>
+              </div>
+            </Card>
+          </div>
+        )}
+
+        {boards.length > 0 && (
+          <div>
+            <div className="flex items-center justify-between mb-6">
+              <div>
+                <h2 className="text-xl font-heading font-bold text-white mb-1">
+                  Recent Boards
+                </h2>
+                <p className="text-text-muted text-sm">
+                  Quick access to your recent projects
+                </p>
+              </div>
+              <Button variant="ghost" onClick={() => {}}>
+                View All
+                <ArrowRight size={16} />
+              </Button>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {boards.slice(0, 6).map((board) => {
+                const workspace = workspaces.find(
+                  (w) => (w._id === board.workspace) ||
+                    ((board.workspace as unknown as { _id: string })?.["_id"] === w._id)
+                );
+
+                return (
+                  <Link key={board._id} href={`/board/${board._id}`}>
+                    <Card hover className="p-4">
+                      <div
+                        className="h-2 rounded-full mb-4"
+                        style={{ backgroundColor: board.color }}
+                      />
+                      <h4 className="font-heading font-semibold text-white mb-1 truncate">
+                        {board.name}
+                      </h4>
+                      {workspace && (
+                        <p className="text-xs text-text-muted flex items-center gap-1">
+                          {workspace.icon} {workspace.name}
+                        </p>
+                      )}
+                    </Card>
+                  </Link>
+                );
+              })}
+            </div>
+          </div>
+        )}
+      </div>
+
+      <Modal
+        isOpen={showCreateWorkspace}
+        onClose={() => {
+          setShowCreateWorkspace(false);
+          setWorkspaceForm({ name: "", description: "", icon: "🚀", color: "#3B82F6" });
+        }}
+        title="Create Workspace"
+      >
+        <form onSubmit={handleCreateWorkspace} className="space-y-5">
+          <Input
+            label="Workspace Name"
+            placeholder="e.g., Marketing Team"
+            value={workspaceForm.name}
+            onChange={(e) => setWorkspaceForm({ ...workspaceForm, name: e.target.value })}
+          />
+
+          <Input
+            label="Description (optional)"
+            placeholder="What's this workspace about?"
+            value={workspaceForm.description}
+            onChange={(e) => setWorkspaceForm({ ...workspaceForm, description: e.target.value })}
+          />
+
+          <div>
+            <label className="block text-sm font-medium text-text-secondary mb-2">
+              Icon
+            </label>
+            <div className="flex flex-wrap gap-2">
+              {WORKSPACE_ICONS.map((icon) => (
+                <button
+                  key={icon}
+                  type="button"
+                  onClick={() => setWorkspaceForm({ ...workspaceForm, icon })}
+                  className={`w-10 h-10 rounded-lg flex items-center justify-center text-xl transition-all ${
+                    workspaceForm.icon === icon
+                      ? "bg-primary/20 ring-2 ring-primary"
+                      : "bg-white/5 hover:bg-white/10"
+                  }`}
+                >
+                  {icon}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-text-secondary mb-2">
+              Color
+            </label>
+            <div className="flex flex-wrap gap-2">
+              {WORKSPACE_COLORS.map((color) => (
+                <button
+                  key={color}
+                  type="button"
+                  onClick={() => setWorkspaceForm({ ...workspaceForm, color })}
+                  className={`w-8 h-8 rounded-full transition-all ${
+                    workspaceForm.color === color
+                      ? "ring-2 ring-offset-2 ring-offset-surface ring-white"
+                      : "hover:scale-110"
+                  }`}
+                  style={{ backgroundColor: color }}
+                />
+              ))}
+            </div>
+          </div>
+
+          <div className="flex gap-3 pt-2">
+            <Button
+              type="button"
+              variant="secondary"
+              className="flex-1"
+              onClick={() => setShowCreateWorkspace(false)}
+            >
+              Cancel
+            </Button>
+            <Button type="submit" className="flex-1" isLoading={isCreating}>
+              Create Workspace
+            </Button>
+          </div>
+        </form>
+      </Modal>
+    </div>
+  );
+}
