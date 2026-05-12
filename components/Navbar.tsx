@@ -77,7 +77,7 @@ const Navbar = () => {
           </Link>
           <div className="magnetic-btn relative group">
             <div className="absolute -inset-0.5 bg-gradient-to-r from-primary to-accent rounded-full blur opacity-60 group-hover:opacity-100 transition duration-300"></div>
-            <button className="relative bg-surface border border-white/10 text-white text-sm font-medium px-5 py-2 rounded-full hover:bg-surface/80 transition-colors">
+            <button className="relative bg-surface border border-surface-border text-text-main text-sm font-medium px-5 py-2 rounded-full hover:bg-surface-border transition-colors">
               Get Started Free
             </button>
           </div>
@@ -86,7 +86,7 @@ const Navbar = () => {
         {/* Mobile Menu Toggle */}
         <button
           onClick={() => setIsMenuOpen(true)}
-          className="md:hidden text-text-muted hover:text-white relative z-50"
+          className="md:hidden text-text-muted hover:text-text-main relative z-50"
         >
           <List size={24} />
         </button>
@@ -94,13 +94,13 @@ const Navbar = () => {
 
       {/* Mobile Full-screen Menu */}
       <div
-        className={`fixed inset-0 bg-background/95 backdrop-blur-3xl z-40 transform transition-transform duration-500 flex flex-col items-center justify-center space-y-8 text-2xl font-heading font-bold text-white ${
+        className={`fixed inset-0 bg-background/95 backdrop-blur-3xl z-40 transform transition-transform duration-500 flex flex-col items-center justify-center space-y-8 text-2xl font-heading font-bold text-text-main ${
           isMenuOpen ? "translate-x-0" : "translate-x-full"
         }`}
       >
         <button
           onClick={() => setIsMenuOpen(false)}
-          className="absolute top-6 right-6 text-white/50 hover:text-white"
+          className="absolute top-6 right-6 text-text-muted hover:text-text-main"
         >
           <X size={32} />
         </button>
@@ -117,14 +117,14 @@ const Navbar = () => {
         <Link
           href="#"
           onClick={() => setIsMenuOpen(false)}
-          className="text-lg text-text-muted hover:text-white transition-colors mt-8 font-sans"
+          className="text-lg text-text-muted hover:text-text-main transition-colors mt-8 font-sans"
         >
           Log in
         </Link>
         <Link
           href="#"
           onClick={() => setIsMenuOpen(false)}
-          className="bg-white text-gray-950 px-8 py-3 rounded-full text-lg mt-4 font-sans shadow-[0_0_20px_rgba(255,255,255,0.2)]"
+          className="bg-text-main text-background px-8 py-3 rounded-full text-lg mt-4 font-sans shadow-xl shadow-text-main/10"
         >
           Get Started Free
         </Link>

@@ -54,7 +54,7 @@ const Features = () => {
       <div className="max-w-7xl mx-auto px-6 md:px-12">
         <div className="text-center max-w-3xl mx-auto mb-20 gs-reveal-up">
           <h2 className="text-primary font-bold tracking-widest text-sm uppercase mb-3 font-heading">Powerful Capabilities</h2>
-          <h3 className="font-heading text-4xl md:text-5xl font-bold mb-6 text-white tracking-tight">Everything you need to ship faster.</h3>
+          <h3 className="font-heading text-4xl md:text-5xl font-bold mb-6 text-text-main tracking-tight">Everything you need to ship faster.</h3>
           <p className="text-text-muted text-lg">We stripped away the complexity of traditional project management, leaving a fast, keyboard-first, and highly visual experience.</p>
         </div>
 
@@ -66,16 +66,16 @@ const Features = () => {
               <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mb-6 border border-primary/20">
                 <GitBranch size={24} className="text-primary" />
               </div>
-              <h4 className="text-2xl font-heading font-semibold text-white mb-3">Automated Workflows</h4>
+              <h4 className="text-2xl font-heading font-semibold text-text-main mb-3">Automated Workflows</h4>
               <p className="text-text-muted text-sm leading-relaxed max-w-md">Connect your tools and let Nova handle the repetitive tasks. Our visual workflow builder maps exactly how your team operates.</p>
             </div>
             
             <div className="absolute right-[-10%] bottom-[-10%] w-[60%] h-[80%] pointer-events-none opacity-80 group-hover:opacity-100 transition-opacity duration-500">
               <svg viewBox="0 0 300 200" className="w-full h-full drop-shadow-[0_10px_20px_rgba(59,130,246,0.3)]">
-                <path id="workflow-line" d="M 40,150 C 100,150 120,60 180,60 C 230,60 250,110 290,110" fill="none" stroke="rgba(255,255,255,0.15)" strokeWidth="3" strokeDasharray="8 8"/>
-                <rect x="20" y="130" width="40" height="40" rx="10" fill="#0B0D14" stroke="#3B82F6" strokeWidth="2"/>
-                <rect x="160" y="40" width="40" height="40" rx="10" fill="#0B0D14" stroke="#8B5CF6" strokeWidth="2"/>
-                <rect x="260" y="90" width="40" height="40" rx="10" fill="#0B0D14" stroke="#06B6D4" strokeWidth="2"/>
+                <path id="workflow-line" d="M 40,150 C 100,150 120,60 180,60 C 230,60 250,110 290,110" fill="none" stroke="var(--color-surface-border)" strokeWidth="3" strokeDasharray="8 8"/>
+                <rect x="20" y="130" width="40" height="40" rx="10" fill="var(--color-surface)" stroke="#3B82F6" strokeWidth="2"/>
+                <rect x="160" y="40" width="40" height="40" rx="10" fill="var(--color-surface)" stroke="#8B5CF6" strokeWidth="2"/>
+                <rect x="260" y="90" width="40" height="40" rx="10" fill="var(--color-surface)" stroke="#06B6D4" strokeWidth="2"/>
                 <circle r="6" fill="#3B82F6" filter="drop-shadow(0 0 8px #3B82F6)">
                   <animateMotion dur="4s" repeatCount="indefinite" rotate="auto">
                     <mpath href="#workflow-line"/>
@@ -91,14 +91,14 @@ const Features = () => {
               <div className="w-12 h-12 rounded-xl bg-accent/10 flex items-center justify-center mb-6 border border-accent/20">
                 <ChartLineUp size={24} className="text-accent" />
               </div>
-              <h4 className="text-2xl font-heading font-semibold text-white mb-3">Velocity Analytics</h4>
+              <h4 className="text-2xl font-heading font-semibold text-text-main mb-3">Velocity Analytics</h4>
               <p className="text-text-muted text-sm leading-relaxed mb-6">Track sprint velocity, cycle times, and team bandwidth in real-time. Make data-driven decisions instantly.</p>
             </div>
             
-            <div className="bg-white/[0.03] border border-white/5 rounded-xl p-4 mb-4 relative z-10 flex justify-between items-end backdrop-blur-sm">
+            <div className="bg-glass-bg border border-glass-border rounded-xl p-4 mb-4 relative z-10 flex justify-between items-end backdrop-blur-sm">
               <div>
-                <div className="text-[10px] uppercase text-white/40 font-bold mb-1 tracking-wider">Avg Cycle Time</div>
-                <div className="text-2xl font-heading font-bold text-white">2.4 <span className="text-sm text-white/50">Days</span></div>
+                <div className="text-[10px] uppercase text-text-muted font-bold mb-1 tracking-wider">Avg Cycle Time</div>
+                <div className="text-2xl font-heading font-bold text-text-main">2.4 <span className="text-sm text-text-muted">Days</span></div>
               </div>
               <div className="text-green-400 text-xs font-bold flex items-center gap-1 bg-green-400/10 px-2 py-1 rounded">
                 <TrendDown size={14} weight="bold" /> 14%
@@ -118,7 +118,7 @@ const Features = () => {
             <div className="w-12 h-12 rounded-xl bg-cyan-glow/10 flex items-center justify-center mb-6 border border-cyan-glow/20">
               <Kanban size={24} className="text-cyan-glow" />
             </div>
-            <h4 className="text-xl font-heading font-semibold text-white mb-3">Limitless Boards</h4>
+            <h4 className="text-xl font-heading font-semibold text-text-main mb-3">Limitless Boards</h4>
             <p className="text-text-muted text-sm leading-relaxed">Map out your entire process with fully customizable Kanban boards. See what needs attention at a glance.</p>
           </div>
 
@@ -126,14 +126,14 @@ const Features = () => {
           <div className="spotlight-card glass-card p-8 group gs-reveal-up">
             <div className="flex items-center gap-3 mb-6">
               <div className="flex -space-x-2">
-                <img src="https://i.pravatar.cc/100?img=11" className="w-10 h-10 rounded-full border-2 border-[#141720]" alt="" />
-                <img src="https://i.pravatar.cc/100?img=41" className="w-10 h-10 rounded-full border-2 border-[#141720]" alt="" />
+                <img src="https://i.pravatar.cc/100?img=11" className="w-10 h-10 rounded-full border-2 border-surface" alt="" />
+                <img src="https://i.pravatar.cc/100?img=41" className="w-10 h-10 rounded-full border-2 border-surface" alt="" />
               </div>
-              <div className="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center border-dashed">
-                <Plus size={16} className="text-white/50" />
+              <div className="w-10 h-10 rounded-full bg-glass-bg border border-glass-border flex items-center justify-center border-dashed">
+                <Plus size={16} className="text-text-muted" />
               </div>
             </div>
-            <h4 className="text-xl font-heading font-semibold text-white mb-3">Multiplayer Native</h4>
+            <h4 className="text-xl font-heading font-semibold text-text-main mb-3">Multiplayer Native</h4>
             <p className="text-text-muted text-sm leading-relaxed">See who is viewing a task, collaborate in comments, and get instant live updates without refreshing.</p>
           </div>
 
