@@ -21,7 +21,11 @@ export async function GET(
 
     const board = await Board.findById(id)
       .populate("workspace", "name color icon owner members")
-      .populate("members.user", "name email avatar");
+      .populate({
+        path: "members.user",
+        select: "name email avatar",
+        strictPopulate: false,
+      });
 
     if (!board) {
       return NextResponse.json(
@@ -58,10 +62,15 @@ export async function GET(
       })
     );
 
+    const boardData = board.toObject();
+    if (!boardData.members) {
+      boardData.members = [];
+    }
+
     return NextResponse.json({
       success: true,
       data: {
-        ...board.toObject(),
+        ...boardData,
         columns: columnsWithTasks,
       },
     });

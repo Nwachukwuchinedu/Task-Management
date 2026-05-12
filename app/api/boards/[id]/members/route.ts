@@ -21,7 +21,11 @@ export async function GET(
     await connectDB();
 
     const board = await Board.findById(id)
-      .populate("members.user", "name email avatar");
+      .populate({
+        path: "members.user",
+        select: "name email avatar",
+        strictPopulate: false,
+      });
 
     if (!board) {
       return NextResponse.json(
@@ -44,7 +48,7 @@ export async function GET(
       );
     }
 
-    return NextResponse.json({ success: true, data: board.members });
+    return NextResponse.json({ success: true, data: members });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Failed to fetch members";
     return NextResponse.json({ success: false, error: message }, { status: 500 });
