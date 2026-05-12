@@ -143,23 +143,32 @@ export async function POST(
       );
     }
 
-    if (!board.members) {
-      board.members = [];
-    }
-    board.members.push({
-      user: userToAdd._id,
-      role: role as "admin" | "member",
-    });
-    await board.save();
-
-    await board.populate({
+    const updatedBoard = await Board.findByIdAndUpdate(
+      id,
+      {
+        $push: {
+          members: {
+            user: userToAdd._id,
+            role: role as "admin" | "member",
+          },
+        },
+      },
+      { new: true }
+    ).populate({
       path: "members.user",
       select: "name email avatar",
       strictPopulate: false,
     });
 
+    if (!updatedBoard) {
+      return NextResponse.json(
+        { success: false, error: "Board not found" },
+        { status: 404 }
+      );
+    }
+
     return NextResponse.json(
-      { success: true, data: board.members, message: "Member added to board" },
+      { success: true, data: updatedBoard.members, message: "Member added to board" },
       { status: 201 }
     );
   } catch (error) {
@@ -232,10 +241,11 @@ export async function DELETE(
       );
     }
 
-    board.members = members.filter(
-      (m: { user: mongoose.Types.ObjectId }) => m.user.toString() !== userId
-    );
-    await board.save();
+    await Board.findByIdAndUpdate(id, {
+      $pull: {
+        members: { user: new mongoose.Types.ObjectId(userId) },
+      },
+    });
 
     return NextResponse.json({ success: true, message: "Member removed from board" });
   } catch (error) {

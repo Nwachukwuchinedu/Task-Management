@@ -39,9 +39,15 @@ export async function POST(request: NextRequest) {
       (m: { user: mongoose.Types.ObjectId }) => m.user.toString() === session.user.id
     );
 
-    if (!isBoardMember) {
+    let isWorkspaceOwner = false;
+    const workspace = await Workspace.findById(board.workspace);
+    if (workspace) {
+      isWorkspaceOwner = workspace.owner.toString() === session.user.id;
+    }
+
+    if (!isBoardMember && !isWorkspaceOwner) {
       return NextResponse.json(
-        { success: false, error: "Only board members can create tasks" },
+        { success: false, error: "Only board members or workspace owner can create tasks" },
         { status: 403 }
       );
     }

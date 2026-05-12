@@ -327,8 +327,15 @@ export default function BoardPage() {
     async function fetchWorkspaceMembers() {
       if (!currentBoard?.workspace) return;
 
+      const workspace = currentBoard.workspace as { _id?: string; name?: string } | string;
+      const workspaceId = typeof workspace === 'object'
+        ? workspace._id
+        : workspace;
+
+      if (!workspaceId) return;
+
       try {
-        const res = await fetch(`/api/workspaces/${currentBoard.workspace}`);
+        const res = await fetch(`/api/workspaces/${workspaceId}`);
         const data = await res.json();
 
         if (data.success) {

@@ -33,7 +33,7 @@ export interface IBoard {
   name: string;
   description?: string;
   color: string;
-  workspace: string;
+  workspace: string | { _id: string; name: string; color: string; icon: string };
   columns: IColumn[];
   members: IBoardMember[];
   createdAt: string;
