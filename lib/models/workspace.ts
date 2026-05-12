@@ -37,12 +37,15 @@ const WorkspaceSchema = new Schema<IWorkspace>(
       ref: "User",
       required: [true, "Owner is required"],
     },
-    members: [
-      {
-        type: Schema.Types.ObjectId,
-        ref: "User",
-      },
-    ],
+    members: {
+      type: [
+        {
+          type: Schema.Types.ObjectId,
+          ref: "User",
+        },
+      ],
+      default: [],
+    },
   },
   {
     timestamps: true,

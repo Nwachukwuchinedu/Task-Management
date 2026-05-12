@@ -36,18 +36,24 @@ const BoardSchema = new Schema<IBoard>(
       ref: "Workspace",
       required: [true, "Workspace reference is required"],
     },
-    columns: [
-      {
-        type: Schema.Types.ObjectId,
-        ref: "Column",
-      },
-    ],
-    members: [
-      {
-        user: { type: Schema.Types.ObjectId, ref: "User" },
-        role: { type: String, enum: ["admin", "member"], default: "member" },
-      },
-    ],
+    columns: {
+      type: [
+        {
+          type: Schema.Types.ObjectId,
+          ref: "Column",
+        },
+      ],
+      default: [],
+    },
+    members: {
+      type: [
+        {
+          user: { type: Schema.Types.ObjectId, ref: "User" },
+          role: { type: String, enum: ["admin", "member"], default: "member" },
+        },
+      ],
+      default: [],
+    },
   },
   {
     timestamps: true,

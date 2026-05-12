@@ -45,6 +45,9 @@ export async function POST(request: NextRequest) {
       position,
     });
 
+    if (!board.columns) {
+      board.columns = [];
+    }
     board.columns.push(column._id);
     await board.save();
 

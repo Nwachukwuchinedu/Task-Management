@@ -49,9 +49,14 @@ export async function POST(
 
     if (workspace) {
       const user = await User.findOne({ email: session.user.email });
-      if (user && !workspace.members.includes(user._id)) {
-        workspace.members.push(user._id);
-        await workspace.save();
+      if (user) {
+        if (!workspace.members) {
+          workspace.members = [];
+        }
+        if (!workspace.members.includes(user._id)) {
+          workspace.members.push(user._id);
+          await workspace.save();
+        }
       }
     }
 

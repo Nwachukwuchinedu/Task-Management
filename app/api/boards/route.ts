@@ -90,6 +90,12 @@ export async function POST(request: NextRequest) {
       description,
       color: color || "#3B82F6",
       workspace: workspaceId,
+      members: [
+        {
+          user: session.user.id,
+          role: "admin",
+        },
+      ],
       columns: [],
     });
 

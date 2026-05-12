@@ -143,18 +143,18 @@ export async function POST(
       );
     }
 
-    const updatedBoard = await Board.findByIdAndUpdate(
-      id,
-      {
-        $push: {
-          members: {
-            user: userToAdd._id,
-            role: role as "admin" | "member",
-          },
-        },
-      },
-      { new: true }
-    ).populate({
+    if (!board.members) {
+      board.members = [];
+    }
+
+    board.members.push({
+      user: userToAdd._id,
+      role: role as "admin" | "member",
+    });
+
+    await board.save();
+
+    const updatedBoard = await Board.findById(id).populate({
       path: "members.user",
       select: "name email avatar",
       strictPopulate: false,
@@ -162,8 +162,8 @@ export async function POST(
 
     if (!updatedBoard) {
       return NextResponse.json(
-        { success: false, error: "Board not found" },
-        { status: 404 }
+        { success: false, error: "Failed to reload board after update" },
+        { status: 500 }
       );
     }
 
