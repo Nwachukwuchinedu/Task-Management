@@ -1,39 +1,53 @@
 import { NextRequest, NextResponse } from "next/server";
-import { taskService } from "@/lib/services";
-import { successResponse, errorResponse } from "@/lib/utils";
-
-export async function GET(request: NextRequest) {
-  try {
-    const { searchParams } = new URL(request.url);
-    const projectId = searchParams.get("projectId");
-    const status = searchParams.get("status");
-    const assignee = searchParams.get("assignee");
-
-    if (!projectId) {
-      return NextResponse.json(errorResponse("Project ID is required"), {
-        status: 400,
-      });
-    }
-
-    const tasks = await taskService.getTasksByProject(projectId, {
-      status: status || undefined,
-      assignee: assignee || undefined,
-    });
-
-    return NextResponse.json(successResponse(tasks));
-  } catch (error) {
-    const message = error instanceof Error ? error.message : "Failed to fetch tasks";
-    return NextResponse.json(errorResponse(message), { status: 500 });
-  }
-}
+import { auth } from "@/lib/auth";
+import { connectDB } from "@/lib/db";
+import { Task, Column } from "@/lib/models";
 
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json();
-    const task = await taskService.createTask(body);
-    return NextResponse.json(successResponse(task), { status: 201 });
+    const session = await auth();
+    if (!session?.user?.id) {
+      return NextResponse.json(
+        { success: false, error: "Unauthorized" },
+        { status: 401 }
+      );
+    }
+
+    const { title, description, columnId, boardId, priority, dueDate, assignee } = await request.json();
+
+    if (!title || !columnId || !boardId) {
+      return NextResponse.json(
+        { success: false, error: "Title, columnId and boardId are required" },
+        { status: 400 }
+      );
+    }
+
+    await connectDB();
+
+    const maxPosition = await Task.findOne({ column: columnId })
+      .sort({ position: -1 })
+      .select("position");
+
+    const position = maxPosition ? maxPosition.position + 1 : 0;
+
+    const task = await Task.create({
+      title,
+      description,
+      column: columnId,
+      board: boardId,
+      priority: priority || "medium",
+      dueDate,
+      assignee,
+      labels: [],
+      position,
+      createdBy: session.user.id,
+    });
+
+    await task.populate("assignee", "name email avatar");
+
+    return NextResponse.json({ success: true, data: task }, { status: 201 });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Failed to create task";
-    return NextResponse.json(errorResponse(message), { status: 500 });
+    return NextResponse.json({ success: false, error: message }, { status: 500 });
   }
 }
