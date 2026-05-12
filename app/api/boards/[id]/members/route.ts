@@ -143,13 +143,20 @@ export async function POST(
       );
     }
 
+    if (!board.members) {
+      board.members = [];
+    }
     board.members.push({
       user: userToAdd._id,
       role: role as "admin" | "member",
     });
     await board.save();
 
-    await board.populate("members.user", "name email avatar");
+    await board.populate({
+      path: "members.user",
+      select: "name email avatar",
+      strictPopulate: false,
+    });
 
     return NextResponse.json(
       { success: true, data: board.members, message: "Member added to board" },
