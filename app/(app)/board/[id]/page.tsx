@@ -739,7 +739,7 @@ export default function BoardPage() {
         actions={
           <Button variant="secondary" size="sm" onClick={() => setShowManageMembers(true)}>
             <Users size={16} />
-            Members ({boardMembers.length})
+            Members ({boardMembers?.length || 0})
           </Button>
         }
       />
@@ -754,10 +754,10 @@ export default function BoardPage() {
         >
           <div className="flex gap-4 h-full min-h-[calc(100vh-180px)]">
             <SortableContext
-              items={currentBoard.columns.map((c) => c._id)}
+              items={currentBoard.columns?.map((c) => c._id) || []}
               strategy={horizontalListSortingStrategy}
             >
-              {currentBoard.columns.map((column) => (
+              {currentBoard.columns?.map((column) => (
                 <Column
                   key={column._id}
                   column={column}
@@ -802,7 +802,7 @@ export default function BoardPage() {
           <div>
             <h3 className="text-sm font-medium text-text-secondary mb-3">Current Members</h3>
             <div className="space-y-2">
-              {boardMembers.map((member) => {
+              {boardMembers?.map((member) => {
                 const userId = typeof member.user === "string" ? member.user : member.user?._id;
                 const userName = typeof member.user === "string" ? "User" : member.user?.name || "User";
                 const userAvatar = typeof member.user === "object" ? member.user?.avatar : undefined;
@@ -828,7 +828,7 @@ export default function BoardPage() {
                   </div>
                 );
               })}
-              {boardMembers.length === 0 && (
+              {boardMembers?.length === 0 && (
                 <p className="text-sm text-text-muted">No board members yet</p>
               )}
             </div>
@@ -982,7 +982,7 @@ export default function BoardPage() {
               onChange={(e) => setTaskForm({ ...taskForm, assigneeId: e.target.value })}
             >
               <option value="">Unassigned</option>
-              {workspaceMembers.map((member) => (
+              {workspaceMembers?.map((member) => (
                 <option key={member._id} value={member._id}>
                   {member.name}
                 </option>
@@ -1079,7 +1079,7 @@ export default function BoardPage() {
               onChange={(e) => setTaskForm({ ...taskForm, assigneeId: e.target.value })}
             >
               <option value="">Unassigned</option>
-              {workspaceMembers.map((member) => (
+              {workspaceMembers?.map((member) => (
                 <option key={member._id} value={member._id}>
                   {member.name}
                 </option>
