@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { SessionProvider } from "@/components/providers/SessionProvider";
+import { LenisProvider } from "@/components/providers/LenisProvider";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import "./globals.css";
 
@@ -22,7 +23,9 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <SessionProvider>{children}</SessionProvider>
+          <LenisProvider>
+            <SessionProvider>{children}</SessionProvider>
+          </LenisProvider>
         </ThemeProvider>
       </body>
     </html>

@@ -148,10 +148,63 @@ const Hero = () => {
         
         @keyframes spin-slow { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
         @keyframes spin-reverse-slow { from { transform: rotate(360deg); } to { transform: rotate(0deg); } }
+
+        /* Custom 3D Animated Grid Background */
+        .custom-hero-grid {
+          position: absolute;
+          inset: 0;
+          z-index: 0;
+          pointer-events: none;
+          overflow: hidden;
+          perspective: 1200px;
+          mask-image: radial-gradient(ellipse at center 40%, black 10%, transparent 70%);
+          -webkit-mask-image: radial-gradient(ellipse at center 40%, black 10%, transparent 70%);
+        }
+
+        .custom-hero-grid-plane {
+          position: absolute;
+          width: 300%;
+          height: 300%;
+          left: -100%;
+          top: -100%;
+          background-image: 
+            linear-gradient(to right, color-mix(in srgb, var(--color-primary) 20%, transparent) 1px, transparent 1px),
+            linear-gradient(to bottom, color-mix(in srgb, var(--color-primary) 20%, transparent) 1px, transparent 1px);
+          background-size: 60px 60px;
+          animation: custom-grid-anim 30s linear infinite;
+        }
+
+        .custom-hero-grid-plane-2 {
+          position: absolute;
+          width: 300%;
+          height: 300%;
+          left: -100%;
+          top: -100%;
+          background-image: 
+            linear-gradient(to right, color-mix(in srgb, var(--color-accent) 15%, transparent) 2px, transparent 2px),
+            linear-gradient(to bottom, color-mix(in srgb, var(--color-accent) 15%, transparent) 2px, transparent 2px);
+          background-size: 180px 180px;
+          animation: custom-grid-anim-2 45s linear infinite;
+        }
+
+        @keyframes custom-grid-anim {
+          0% { transform: rotateX(75deg) translateY(0); }
+          100% { transform: rotateX(75deg) translateY(60px); }
+        }
+        @keyframes custom-grid-anim-2 {
+          0% { transform: rotateX(75deg) translateY(0); }
+          100% { transform: rotateX(75deg) translateY(180px); }
+        }
       `}</style>
 
       {/* Background Glows (Moved to back layer) */}
       <div className="absolute inset-0 pointer-events-none z-0 overflow-hidden">
+        {/* Custom Animated 3D Grid */}
+        <div className="custom-hero-grid">
+          <div className="custom-hero-grid-plane"></div>
+          <div className="custom-hero-grid-plane-2"></div>
+        </div>
+        
         <div className="glow-blob bg-primary w-[500px] h-[500px] top-[-150px] left-[-150px]"></div>
         <div className="glow-blob bg-accent w-[600px] h-[600px] top-[20%] right-[-200px]"></div>
       </div>
