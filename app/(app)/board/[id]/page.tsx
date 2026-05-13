@@ -310,7 +310,10 @@ export default function BoardPage() {
     (m) => (typeof m.user === "string" ? m.user : m.user?._id) === session?.user?.id
   ) || false;
 
-  const canEditBoard = isBoardMember;
+  const isWorkspaceOwner = typeof currentBoard?.workspace === 'object' && 
+    currentBoard.workspace.owner === session?.user?.id;
+
+  const canEditBoard = isBoardMember || isWorkspaceOwner;
 
   useEffect(() => {
     async function fetchBoard() {
