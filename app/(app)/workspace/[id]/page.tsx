@@ -12,12 +12,32 @@ import {
   DotsThree,
   PencilSimple,
   Trash,
+  Smiley,
 } from "@phosphor-icons/react";
+import { 
+  Rocket, 
+  Briefcase, 
+  Palette, 
+  Book, 
+  Zap, 
+  Lightbulb, 
+  Target, 
+  Trophy,
+  Layout,
+  LayoutDashboard,
+  LucideIcon
+} from "lucide-react";
 import { TopBar } from "@/components/layout";
 import { Button, Card, Modal, Input, Dropdown, Avatar } from "@/components/ui";
 import { useToast } from "@/components/ui/Toast";
 import { useWorkspaceStore } from "@/stores";
 import { IBoard, IWorkspace } from "@/lib/types/models";
+import { WORKSPACE_ICON_MAP } from "@/lib/constants";
+
+const IconRenderer = ({ iconId, className, style }: { iconId: string, className?: string, style?: React.CSSProperties }) => {
+  const IconComponent = WORKSPACE_ICON_MAP[iconId] || Rocket;
+  return <IconComponent className={className} style={style} />;
+};
 
 const BOARD_COLORS = [
   "#3B82F6",
@@ -194,6 +214,26 @@ export default function WorkspacePage() {
     }
   };
 
+  const handleDeleteBoard = async (boardId: string, e?: React.MouseEvent) => {
+    e?.stopPropagation();
+    if (!confirm("Are you sure you want to delete this board?")) return;
+
+    try {
+      const res = await fetch(`/api/boards/${boardId}`, {
+        method: "DELETE",
+      });
+
+      if (res.ok) {
+        setBoards(prev => prev.filter(b => b._id !== boardId));
+        showToast("success", "Board deleted");
+      } else {
+        showToast("error", "Failed to delete board");
+      }
+    } catch {
+      showToast("error", "Something went wrong");
+    }
+  };
+
   const handleDeleteWorkspace = async () => {
     if (!confirm("Are you sure? This will delete all boards in this workspace.")) return;
 
@@ -217,12 +257,15 @@ export default function WorkspacePage() {
     return (
       <div className="min-h-full">
         <TopBar />
-        <div className="p-6">
-          <div className="animate-pulse space-y-6">
-            <div className="h-8 w-48 bg-white/5 rounded" />
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="p-6 max-w-7xl mx-auto">
+          <div className="animate-pulse space-y-8">
+            <div className="flex items-center gap-4">
+              <div className="h-10 w-10 bg-white/5 rounded-xl" />
+              <div className="h-8 w-48 bg-white/5 rounded-lg" />
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {[1, 2, 3].map((i) => (
-                <div key={i} className="h-32 bg-white/5 rounded-xl" />
+                <div key={i} className="h-40 bg-white/5 rounded-2xl shimmer-container" />
               ))}
             </div>
           </div>
@@ -242,7 +285,17 @@ export default function WorkspacePage() {
   return (
     <div className="min-h-full">
       <TopBar
-        title={`${workspace.icon} ${workspace.name}`}
+        title={
+          <div className="flex items-center gap-3">
+            <div 
+              className="w-8 h-8 rounded-lg flex items-center justify-center"
+              style={{ backgroundColor: `${workspace.color}20` }}
+            >
+              <IconRenderer iconId={workspace.icon} className="w-4 h-4" style={{ color: workspace.color }} />
+            </div>
+            <span>{workspace.name}</span>
+          </div>
+        }
         showBack
         onBack={() => router.push("/dashboard")}
         actions={
@@ -295,42 +348,53 @@ export default function WorkspacePage() {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {boards.map((board) => (
-              <Link key={board._id} href={`/board/${board._id}`}>
-                <Card hover className="p-5 h-full">
+              <div 
+                key={board._id} 
+                onClick={() => router.push(`/board/${board._id}`)}
+                className="cursor-pointer group"
+              >
+                <Card hover className="p-5 h-full flex flex-col border-white/5 hover:border-primary/50 transition-all duration-300">
                   <div
-                    className="h-2 rounded-full mb-4"
+                    className="h-1.5 w-12 rounded-full mb-4"
                     style={{ backgroundColor: board.color }}
                   />
-                  <h4 className="font-heading font-semibold text-white mb-2">
+                  <h4 className="font-heading font-semibold text-white mb-2 group-hover:text-primary transition-colors">
                     {board.name}
                   </h4>
                   {board.description && (
-                    <p className="text-sm text-text-muted line-clamp-2">
+                    <p className="text-sm text-text-muted line-clamp-2 mb-4">
                       {board.description}
                     </p>
                   )}
-                  <div className="flex items-center justify-between mt-4 pt-4 border-t border-white/5">
-                    <span className="text-xs text-text-muted">
-                      {(board as unknown as { columnCount?: number }).columnCount || board.columns?.length || 0} columns
+                  <div className="flex-1" />
+                  <div className="flex items-center justify-between pt-4 border-t border-white/5">
+                    <span className="text-xs text-text-muted bg-white/5 px-2 py-1 rounded-md">
+                      {(board as any).columnCount || board.columns?.length || 0} columns
                     </span>
-                    <Dropdown
-                      items={[
-                        {
-                          label: "Edit",
-                          icon: <PencilSimple size={16} />,
-                          onClick: () => {},
-                        },
-                        {
-                          label: "Delete",
-                          icon: <Trash size={16} />,
-                          onClick: handleDeleteWorkspace,
-                          variant: "danger",
-                        },
-                      ]}
-                    />
+                    <div onClick={(e) => e.stopPropagation()}>
+                      <Dropdown
+                        items={[
+                          {
+                            label: "Edit",
+                            icon: <PencilSimple size={16} />,
+                            onClick: () => {
+                              showToast("info", "Edit functionality coming soon");
+                            },
+                          },
+                          {
+                            label: "Delete",
+                            icon: <Trash size={16} />,
+                            onClick: () => {
+                              handleDeleteBoard(board._id);
+                            },
+                            variant: "danger",
+                          },
+                        ]}
+                      />
+                    </div>
                   </div>
                 </Card>
-              </Link>
+              </div>
             ))}
 
             <Card

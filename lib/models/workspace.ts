@@ -26,7 +26,7 @@ const WorkspaceSchema = new Schema<IWorkspace>(
     },
     icon: {
       type: String,
-      default: "🚀",
+      default: "rocket",
     },
     color: {
       type: String,

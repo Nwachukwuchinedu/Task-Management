@@ -8,18 +8,35 @@ import {
   Kanban,
   Users,
   ArrowRight,
-  Rocket,
+  Rocket as RocketPhosphor,
   Envelope,
   Check,
   X,
 } from "@phosphor-icons/react";
+import { 
+  Rocket, 
+  Briefcase, 
+  Palette, 
+  Book, 
+  Zap, 
+  Lightbulb, 
+  Target, 
+  Trophy,
+  Layout,
+  LayoutDashboard,
+  LucideIcon
+} from "lucide-react";
 import { TopBar } from "@/components/layout";
 import { Button, Card, Modal, Input, Avatar } from "@/components/ui";
 import { useToast } from "@/components/ui/Toast";
 import { useWorkspaceStore } from "@/stores";
 import { IWorkspace, IBoard, IInvitation } from "@/lib/types/models";
+import { WORKSPACE_ICONS, WORKSPACE_ICON_MAP } from "@/lib/constants";
 
-const WORKSPACE_ICONS = ["🚀", "💼", "🎨", "📚", "⚡", "💡", "🎯", "🏆"];
+const IconRenderer = ({ iconId, className, style }: { iconId: string, className?: string, style?: React.CSSProperties }) => {
+  const IconComponent = WORKSPACE_ICON_MAP[iconId] || Rocket;
+  return <IconComponent className={className} style={style} />;
+};
 const WORKSPACE_COLORS = [
   "#3B82F6",
   "#8B5CF6",
@@ -49,7 +66,7 @@ export default function DashboardPage() {
   const [workspaceForm, setWorkspaceForm] = useState({
     name: "",
     description: "",
-    icon: "🚀",
+    icon: "rocket",
     color: "#3B82F6",
   });
 
@@ -230,10 +247,14 @@ export default function DashboardPage() {
                 <Card key={invitation._id} className="p-4">
                   <div className="flex items-start gap-4">
                     <div
-                      className="w-12 h-12 rounded-xl flex items-center justify-center text-2xl"
+                      className="w-12 h-12 rounded-xl flex items-center justify-center"
                       style={{ backgroundColor: `${invitation.workspace?.color || "#3B82F6"}20` }}
                     >
-                      {invitation.workspace?.icon || "📋"}
+                      <IconRenderer 
+                        iconId={invitation.workspace?.icon || "rocket"} 
+                        className="w-6 h-6" 
+                        style={{ color: invitation.workspace?.color || "#3B82F6" }}
+                      />
                     </div>
                     <div className="flex-1 min-w-0">
                       <h4 className="font-heading font-semibold text-white truncate">
@@ -285,15 +306,27 @@ export default function DashboardPage() {
         {workspacesLoading || isLoadingBoards ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {[1, 2, 3].map((i) => (
-              <Card key={i} className="h-32 animate-pulse">
-                <div className="h-full bg-white/5 rounded-xl" />
+              <Card key={i} className="h-40 shimmer-container bg-surface/40 overflow-hidden">
+                <div className="p-5 space-y-4">
+                  <div className="flex gap-4">
+                    <div className="w-12 h-12 rounded-xl bg-white/5 animate-pulse" />
+                    <div className="flex-1 space-y-2">
+                      <div className="h-4 w-3/4 bg-white/5 rounded animate-pulse" />
+                      <div className="h-3 w-1/2 bg-white/5 rounded animate-pulse" />
+                    </div>
+                  </div>
+                  <div className="flex gap-4 mt-6">
+                    <div className="h-3 w-16 bg-white/5 rounded animate-pulse" />
+                    <div className="h-3 w-16 bg-white/5 rounded animate-pulse" />
+                  </div>
+                </div>
               </Card>
             ))}
           </div>
         ) : workspaces.length === 0 ? (
           <div className="text-center py-16">
-            <div className="w-20 h-20 mx-auto mb-6 rounded-2xl bg-surface-border flex items-center justify-center">
-              <Rocket size={40} className="text-text-muted" />
+            <div className="w-20 h-20 mx-auto mb-6 rounded-2xl bg-white/5 border border-white/5 flex items-center justify-center">
+              <RocketPhosphor size={40} className="text-text-muted" />
             </div>
             <h3 className="text-xl font-heading font-semibold text-white mb-2">
               No workspaces yet
@@ -319,10 +352,10 @@ export default function DashboardPage() {
                   <Card hover className="p-5 h-full">
                     <div className="flex items-start gap-4">
                       <div
-                        className="w-12 h-12 rounded-xl flex items-center justify-center text-2xl"
+                        className="w-12 h-12 rounded-xl flex items-center justify-center"
                         style={{ backgroundColor: `${workspace.color}20` }}
                       >
-                        {workspace.icon}
+                        <IconRenderer iconId={workspace.icon} className="w-6 h-6" style={{ color: workspace.color }} />
                       </div>
                       <div className="flex-1 min-w-0">
                         <h3 className="font-heading font-semibold text-white truncate">
@@ -399,10 +432,11 @@ export default function DashboardPage() {
                       <h4 className="font-heading font-semibold text-white mb-1 truncate">
                         {board.name}
                       </h4>
-                      {workspace && (
-                        <p className="text-xs text-text-muted flex items-center gap-1">
-                          {workspace.icon} {workspace.name}
-                        </p>
+                      {workspace && workspace.icon && (
+                        <div className="flex items-center gap-1.5">
+                          <IconRenderer iconId={workspace.icon} className="w-3 h-3" style={{ color: workspace.color }} />
+                          <span>{workspace.name}</span>
+                        </div>
                       )}
                     </Card>
                   </Link>
@@ -417,7 +451,7 @@ export default function DashboardPage() {
         isOpen={showCreateWorkspace}
         onClose={() => {
           setShowCreateWorkspace(false);
-          setWorkspaceForm({ name: "", description: "", icon: "🚀", color: "#3B82F6" });
+          setWorkspaceForm({ name: "", description: "", icon: "rocket", color: "#3B82F6" });
         }}
         title="Create Workspace"
       >
@@ -440,19 +474,19 @@ export default function DashboardPage() {
             <label className="block text-sm font-medium text-text-secondary mb-2">
               Icon
             </label>
-            <div className="flex flex-wrap gap-2">
-              {WORKSPACE_ICONS.map((icon) => (
+            <div className="flex flex-wrap gap-3">
+              {WORKSPACE_ICONS.map(({ id, icon: Icon }) => (
                 <button
-                  key={icon}
+                  key={id}
                   type="button"
-                  onClick={() => setWorkspaceForm({ ...workspaceForm, icon })}
-                  className={`w-10 h-10 rounded-lg flex items-center justify-center text-xl transition-all ${
-                    workspaceForm.icon === icon
-                      ? "bg-primary/20 ring-2 ring-primary"
-                      : "bg-white/5 hover:bg-white/10"
+                  onClick={() => setWorkspaceForm({ ...workspaceForm, icon: id })}
+                  className={`w-12 h-12 rounded-xl flex items-center justify-center transition-all duration-300 ${
+                    workspaceForm.icon === id
+                      ? "bg-primary/20 ring-2 ring-primary text-primary"
+                      : "bg-white/5 hover:bg-white/10 text-text-muted"
                   }`}
                 >
-                  {icon}
+                  <Icon size={22} />
                 </button>
               ))}
             </div>

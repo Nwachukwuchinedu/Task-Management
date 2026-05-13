@@ -5,7 +5,7 @@ import Link from "next/link";
 import { MagnifyingGlass, Bell, CaretLeft } from "@phosphor-icons/react";
 
 interface TopBarProps {
-  title?: string;
+  title?: React.ReactNode;
   showBack?: boolean;
   onBack?: () => void;
   actions?: React.ReactNode;
@@ -16,16 +16,15 @@ export default function TopBar({ title, showBack, onBack, actions }: TopBarProps
     <header className="h-16 bg-surface border-b border-white/5 flex items-center justify-between px-6">
       <div className="flex items-center gap-4">
         {showBack && (
-          <Link
-            href="/dashboard"
+          <button
             onClick={onBack}
             className="p-2 rounded-lg hover:bg-white/5 text-text-muted hover:text-white transition-colors"
           >
             <CaretLeft size={20} />
-          </Link>
+          </button>
         )}
         {title && (
-          <h1 className="text-lg font-heading font-semibold text-white">{title}</h1>
+          <div className="text-lg font-heading font-semibold text-white">{title}</div>
         )}
       </div>
 
