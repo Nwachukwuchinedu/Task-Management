@@ -188,23 +188,37 @@ function Column({
             {column.tasks?.length || 0}
           </span>
         </div>
-        {canEdit && (
-          <Dropdown
-            items={[
-              {
-                label: "Edit",
-                icon: <PencilSimple size={14} />,
-                onClick: onEditColumn,
-              },
-              {
-                label: "Delete",
-                icon: <Trash size={14} />,
-                onClick: onDeleteColumn,
-                variant: "danger",
-              },
-            ]}
-          />
-        )}
+        <div className="flex items-center gap-1">
+          {canEdit && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onAddTask();
+              }}
+              className="p-1 rounded-md hover:bg-white/10 text-text-muted hover:text-white transition-colors"
+              title="Add task"
+            >
+              <Plus size={18} />
+            </button>
+          )}
+          {canEdit && (
+            <Dropdown
+              items={[
+                {
+                  label: "Edit",
+                  icon: <PencilSimple size={14} />,
+                  onClick: onEditColumn,
+                },
+                {
+                  label: "Delete",
+                  icon: <Trash size={14} />,
+                  onClick: onDeleteColumn,
+                  variant: "danger",
+                },
+              ]}
+            />
+          )}
+        </div>
       </div>
 
       <div className="flex-1 overflow-y-auto p-3 space-y-3">
@@ -737,10 +751,22 @@ export default function BoardPage() {
         showBack
         onBack={() => router.push(`/workspace/${currentBoard.workspace}`)}
         actions={
-          <Button variant="secondary" size="sm" onClick={() => setShowManageMembers(true)}>
-            <Users size={16} />
-            Members ({boardMembers?.length || 0})
-          </Button>
+          <div className="flex items-center gap-2">
+            {canEditBoard && currentBoard.columns?.length > 0 && (
+              <Button 
+                size="sm" 
+                onClick={() => openCreateTask(currentBoard.columns[0])}
+                className="hidden sm:flex"
+              >
+                <Plus size={16} />
+                Add Task
+              </Button>
+            )}
+            <Button variant="secondary" size="sm" onClick={() => setShowManageMembers(true)}>
+              <Users size={16} />
+              Members ({boardMembers?.length || 0})
+            </Button>
+          </div>
         }
       />
 

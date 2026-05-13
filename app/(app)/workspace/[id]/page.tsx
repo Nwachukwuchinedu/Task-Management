@@ -32,37 +32,30 @@ import { Button, Card, Modal, Input, Dropdown, Avatar } from "@/components/ui";
 import { useToast } from "@/components/ui/Toast";
 import { useWorkspaceStore } from "@/stores";
 import { IBoard, IWorkspace } from "@/lib/types/models";
-import { WORKSPACE_ICON_MAP } from "@/lib/constants";
+import { WORKSPACE_ICONS, WORKSPACE_ICON_MAP, WORKSPACE_COLORS, BOARD_COLORS } from "@/lib/constants";
 
 const IconRenderer = ({ iconId, className, style }: { iconId: string, className?: string, style?: React.CSSProperties }) => {
   const IconComponent = WORKSPACE_ICON_MAP[iconId] || Rocket;
   return <IconComponent className={className} style={style} />;
 };
 
-const BOARD_COLORS = [
-  "#3B82F6",
-  "#8B5CF6",
-  "#EC4899",
-  "#10B981",
-  "#F59E0B",
-  "#EF4444",
-  "#06B6D4",
-  "#84CC16",
-];
+
 
 export default function WorkspacePage() {
   const params = useParams();
   const router = useRouter();
   const { showToast } = useToast();
-  const { workspaces, setCurrentWorkspace } = useWorkspaceStore();
+  const { workspaces, setCurrentWorkspace, updateWorkspace, removeWorkspace } = useWorkspaceStore();
 
   const [workspace, setWorkspace] = useState<IWorkspace | null>(null);
   const [boards, setBoards] = useState<IBoard[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [showCreateBoard, setShowCreateBoard] = useState(false);
+  const [showEditBoard, setShowEditBoard] = useState(false);
   const [showInvite, setShowInvite] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
+  const [selectedBoard, setSelectedBoard] = useState<IBoard | null>(null);
 
   const [boardForm, setBoardForm] = useState({
     name: "",
@@ -164,6 +157,37 @@ export default function WorkspacePage() {
     }
   };
 
+  const handleUpdateBoard = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!boardForm.name.trim() || !selectedBoard) return;
+
+    setIsCreating(true);
+
+    try {
+      const res = await fetch(`/api/boards/${selectedBoard._id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(boardForm),
+      });
+
+      const data = await res.json();
+
+      if (data.success) {
+        setBoards((prev) => prev.map(b => b._id === selectedBoard._id ? data.data : b));
+        setShowEditBoard(false);
+        setSelectedBoard(null);
+        setBoardForm({ name: "", description: "", color: "#3B82F6" });
+        showToast("success", "Board updated!");
+      } else {
+        showToast("error", data.error || "Failed to update board");
+      }
+    } catch {
+      showToast("error", "Something went wrong");
+    } finally {
+      setIsCreating(false);
+    }
+  };
+
   const handleInvite = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!inviteEmail.trim()) return;
@@ -204,6 +228,7 @@ export default function WorkspacePage() {
 
       if (data.success) {
         setWorkspace(data.data);
+        updateWorkspace(params.id as string, data.data);
         setShowSettings(false);
         showToast("success", "Workspace updated!");
       } else {
@@ -212,6 +237,16 @@ export default function WorkspacePage() {
     } catch {
       showToast("error", "Something went wrong");
     }
+  };
+
+  const openEditBoard = (board: IBoard) => {
+    setSelectedBoard(board);
+    setBoardForm({
+      name: board.name,
+      description: board.description || "",
+      color: board.color,
+    });
+    setShowEditBoard(true);
   };
 
   const handleDeleteBoard = async (boardId: string, e?: React.MouseEvent) => {
@@ -243,6 +278,7 @@ export default function WorkspacePage() {
       });
 
       if (res.ok) {
+        removeWorkspace(params.id as string);
         showToast("success", "Workspace deleted");
         router.push("/dashboard");
       } else {
@@ -377,9 +413,7 @@ export default function WorkspacePage() {
                           {
                             label: "Edit",
                             icon: <PencilSimple size={16} />,
-                            onClick: () => {
-                              showToast("info", "Edit functionality coming soon");
-                            },
+                            onClick: () => openEditBoard(board),
                           },
                           {
                             label: "Delete",
@@ -489,6 +523,59 @@ export default function WorkspacePage() {
         </form>
       </Modal>
 
+      <Modal isOpen={showEditBoard} onClose={() => setShowEditBoard(false)} title="Edit Board">
+        <form onSubmit={handleUpdateBoard} className="space-y-5">
+          <Input
+            label="Board Name"
+            placeholder="e.g., Website Redesign"
+            value={boardForm.name}
+            onChange={(e) => setBoardForm({ ...boardForm, name: e.target.value })}
+          />
+
+          <Input
+            label="Description (optional)"
+            placeholder="What's this board about?"
+            value={boardForm.description}
+            onChange={(e) => setBoardForm({ ...boardForm, description: e.target.value })}
+          />
+
+          <div>
+            <label className="block text-sm font-medium text-text-secondary mb-2">
+              Color
+            </label>
+            <div className="flex flex-wrap gap-2">
+              {BOARD_COLORS.map((color) => (
+                <button
+                  key={color}
+                  type="button"
+                  onClick={() => setBoardForm({ ...boardForm, color })}
+                  className={`w-8 h-8 rounded-full transition-all ${
+                    boardForm.color === color
+                      ? "ring-2 ring-offset-2 ring-offset-surface ring-white"
+                      : "hover:scale-110"
+                  }`}
+                  style={{ backgroundColor: color }}
+                />
+              ))}
+            </div>
+          </div>
+
+          <div className="flex gap-3 pt-2">
+            <Button
+              type="button"
+              variant="secondary"
+              className="flex-1"
+              onClick={() => setShowEditBoard(false)}
+            >
+              Cancel
+            </Button>
+            <Button type="submit" className="flex-1" isLoading={isCreating}>
+              Save Changes
+            </Button>
+          </div>
+        </form>
+      </Modal>
+
       <Modal isOpen={showInvite} onClose={() => setShowInvite(false)} title="Invite Members">
         <form onSubmit={handleInvite} className="space-y-5">
           <Input
@@ -545,6 +632,88 @@ export default function WorkspacePage() {
               Cancel
             </Button>
             <Button type="submit">Save Changes</Button>
+          </div>
+        </form>
+      </Modal>
+      <Modal isOpen={showSettings} onClose={() => setShowSettings(false)} title="Workspace Settings">
+        <form onSubmit={handleUpdateSettings} className="space-y-5">
+          <Input
+            label="Workspace Name"
+            placeholder="e.g., Marketing Team"
+            value={settingsForm.name}
+            onChange={(e) => setSettingsForm({ ...settingsForm, name: e.target.value })}
+          />
+
+          <Input
+            label="Description (optional)"
+            placeholder="What's this workspace about?"
+            value={settingsForm.description}
+            onChange={(e) => setSettingsForm({ ...settingsForm, description: e.target.value })}
+          />
+
+          <div>
+            <label className="block text-sm font-medium text-text-secondary mb-2">
+              Icon
+            </label>
+            <div className="flex flex-wrap gap-3">
+              {WORKSPACE_ICONS.map(({ id, icon: Icon }: { id: string; icon: any }) => (
+                <button
+                  key={id}
+                  type="button"
+                  onClick={() => setSettingsForm({ ...settingsForm, icon: id })}
+                  className={`w-12 h-12 rounded-xl flex items-center justify-center transition-all duration-300 ${
+                    settingsForm.icon === id
+                      ? "bg-primary/20 ring-2 ring-primary text-primary"
+                      : "bg-white/5 hover:bg-white/10 text-text-muted"
+                  }`}
+                >
+                  <Icon size={22} />
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-text-secondary mb-2">
+              Color
+            </label>
+            <div className="flex flex-wrap gap-2">
+              {WORKSPACE_COLORS.map((color: string) => (
+                <button
+                  key={color}
+                  type="button"
+                  onClick={() => setSettingsForm({ ...settingsForm, color })}
+                  className={`w-8 h-8 rounded-full transition-all ${
+                    settingsForm.color === color
+                      ? "ring-2 ring-offset-2 ring-offset-surface ring-white"
+                      : "hover:scale-110"
+                  }`}
+                  style={{ backgroundColor: color }}
+                />
+              ))}
+            </div>
+          </div>
+
+          <div className="pt-2 flex flex-col gap-3">
+            <Button type="submit" className="w-full" isLoading={isCreating}>
+              Save Changes
+            </Button>
+            
+            <div className="pt-4 border-t border-white/5">
+              <h4 className="text-sm font-semibold text-red-400 mb-2">Danger Zone</h4>
+              <p className="text-xs text-text-muted mb-4">
+                Deleting this workspace will permanently remove all associated boards, tasks, and data. This action cannot be undone.
+              </p>
+              <Button
+                type="button"
+                variant="ghost"
+                className="w-full text-red-400 hover:bg-red-400/10 border border-red-400/20"
+                onClick={handleDeleteWorkspace}
+              >
+                <Trash size={16} />
+                Delete Workspace
+              </Button>
+            </div>
           </div>
         </form>
       </Modal>
