@@ -70,16 +70,19 @@ const Navbar = () => {
             </button>
           )}
           <Link
-            href="#"
+            href="/login"
             className="text-sm font-medium text-text-muted hover:text-text-main transition-colors"
           >
             Log in
           </Link>
           <div className="magnetic-btn relative group">
             <div className="absolute -inset-0.5 bg-gradient-to-r from-primary to-accent rounded-full blur opacity-60 group-hover:opacity-100 transition duration-300"></div>
-            <button className="relative bg-surface border border-surface-border text-text-main text-sm font-medium px-5 py-2 rounded-full hover:bg-surface-border transition-colors">
+            <Link 
+              href="/register"
+              className="relative block bg-surface border border-surface-border text-text-main text-sm font-medium px-5 py-2 rounded-full hover:bg-surface-border transition-colors"
+            >
               Get Started Free
-            </button>
+            </Link>
           </div>
         </div>
 
@@ -115,16 +118,16 @@ const Navbar = () => {
           </Link>
         ))}
         <Link
-          href="#"
+          href="/login"
           onClick={() => setIsMenuOpen(false)}
           className="text-lg text-text-muted hover:text-text-main transition-colors mt-8 font-sans"
         >
           Log in
         </Link>
         <Link
-          href="#"
+          href="/register"
           onClick={() => setIsMenuOpen(false)}
-          className="bg-text-main text-background px-8 py-3 rounded-full text-lg mt-4 font-sans shadow-xl shadow-text-main/10"
+          className="bg-text-main text-background px-8 py-3 rounded-full text-lg mt-4 font-sans shadow-xl shadow-text-main/10 text-center"
         >
           Get Started Free
         </Link>
