@@ -30,3 +30,25 @@ export const WORKSPACE_ICON_MAP: Record<string, any> = {
   target: Target,
   trophy: Trophy,
 };
+
+export const WORKSPACE_COLORS = [
+  "#3B82F6",
+  "#8B5CF6",
+  "#EC4899",
+  "#10B981",
+  "#F59E0B",
+  "#EF4444",
+  "#06B6D4",
+  "#84CC16",
+];
+
+export const BOARD_COLORS = [
+  "#3B82F6",
+  "#8B5CF6",
+  "#EC4899",
+  "#10B981",
+  "#F59E0B",
+  "#EF4444",
+  "#06B6D4",
+  "#84CC16",
+];
